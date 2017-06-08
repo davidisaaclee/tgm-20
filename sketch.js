@@ -49,7 +49,10 @@ function State(options) {
 		Object.assign({}, defaultOptions, options);
 
 	return Object.assign(this, {
-		grid: createGrid(opts.gridWidth, opts.gridHeight, chroma('black')),
+		grid: createGrid(
+			opts.gridWidth,
+			opts.gridHeight,
+			chroma('black')),
 		sourceCode: "",
 		timestamp: 0
 	});
@@ -96,7 +99,8 @@ const colorCommand = new Command({
 					from: { lower: 0, upper: grid.width },
 					to: { lower: 0, upper: 360 }
 				});
-				newGrid.tiles[x][y].color = chroma.hsl((hue + hueOffset) % 360, 1, 0.5);
+				newGrid.tiles[x][y].color =
+					chroma.hsl((hue + hueOffset) % 360, 1, 0.5);
 			}
 		}
 
@@ -142,14 +146,19 @@ const desyncCommand = new Command({
 
 	transform: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
+		const scaledMod = floor(Range.convert(mod, {
+			from: { lower: 0, upper: 10 },
+			to: { lower: 0, upper: grid.width }
+		}));
 
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
 				if ((y % 2) == 0) {
 					newGrid.tiles[x][y].color = grid.tiles[x][y].color;
 				} else {
-					const offset = -(mod + 1);
-					const dstCoordinate = wrapGridCoordinate(x + offset, y, grid);
+					const offset = -(scaledMod + 1);
+					const dstCoordinate =
+						wrapGridCoordinate(x + offset, y, grid);
 
 					newGrid.tiles[dstCoordinate.x][dstCoordinate.y].color =
 						grid.tiles[x][y].color;
@@ -184,7 +193,10 @@ const rotateCommand = new Command({
 				}) + scaledMod;
 
 				newGrid.tiles[x][y].color =
-					chroma.hsl(Math.cos(xr), Math.cos(yr), Math.cos(xr) - Math.sin(yr));
+					chroma.hsl(
+						Math.cos(xr),
+						Math.cos(yr), 
+						Math.cos(xr) - Math.sin(yr));
 			}
 		}
 
@@ -225,7 +237,8 @@ const rotateCommand = new Command({
 				const unoffsetY = rotatedPoint.y - centeringOffset.y;
 
 				// Wrap coordinate to grid.
-				const dstCoordinate = wrapGridCoordinate(unoffsetX, unoffsetY, grid);
+				const dstCoordinate =
+					wrapGridCoordinate(unoffsetX, unoffsetY, grid);
 
 				newGrid.tiles[dstCoordinate.x][dstCoordinate.y] =
 					grid.tiles[x][y];
@@ -242,8 +255,12 @@ const animateCommand = new Command({
 	makeSource: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 		const scaledMod = floor(Range.convert(mod, {
-			from: { lower: 0, upper: 10 },
-			to: { lower: grid.width / 2, upper: grid.width / 2 + grid.width },
+			from: {
+				lower: 0,
+				upper: 10 },
+			to: {
+				lower: grid.width / 2,
+				upper: grid.width / 2 + grid.width },
 		})) % grid.width;
 
 		for (var x = 0; x < grid.width; x++) {
@@ -386,7 +403,8 @@ function keyTyped() {
 		return false;
 	} else if (keyCode == 8) {
 		Object.assign(state, {
-			sourceCode: state.sourceCode.slice(0, state.sourceCode.length - 1)
+			sourceCode: state.sourceCode
+				.slice(0, state.sourceCode.length - 1)
 		});
 
 		return false;
