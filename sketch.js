@@ -242,8 +242,8 @@ const animateCommand = new Command({
 		var newGrid = cloneGrid(grid);
 		const scaledMod = floor(Range.convert(mod, {
 			from: { lower: 0, upper: 10 },
-			to: { lower: 0, upper: grid.width },
-		}));
+			to: { lower: grid.width / 2, upper: grid.width / 2 + grid.width },
+		})) % grid.width;
 
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
