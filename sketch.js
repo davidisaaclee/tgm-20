@@ -50,7 +50,7 @@ function State(options) {
 
 	return Object.assign(this, {
 		grid: createGrid(opts.gridWidth, opts.gridHeight, chroma('black')),
-		stack: [],
+		sourceCode: "",
 		timestamp: 0
 	});
 }
@@ -313,9 +313,17 @@ function tick(dt, model) {
 
 const tileSize = 40;
 function render(model) {
+	background(0);
+	const stack = model.sourceCode
+		.split('')
+		.map((char) => charToCommandIndex[char])
+		.filter((idx) => idx != null)
+		.map((idx) => commands[idx])
+		.filter((cmd) => cmd != null);
+
 	// TODO: If mods are calculated from the top of the stack to the
 	// bottom, we could use `mod` within `modOffets`.
-	var mods = model.stack
+	var mods = stack
 		.reduce(
 			(acc, elm, idx) => {
 				const offsets = elm.modOffsets(model.timestamp, idx);
@@ -325,9 +333,9 @@ function render(model) {
 
 				return acc;
 			},
-			model.stack.map(() => 0));
+			stack.map(() => 0));
 
-	const renderedGrid = model.stack.reduce((grid, elm, idx) => {
+	const renderedGrid = stack.reduce((grid, elm, idx) => {
 		if (idx == 0) {
 			return elm.makeSource(grid, mods[idx]);
 		} else {
@@ -342,6 +350,10 @@ function render(model) {
 			rect(x * tileSize, y * tileSize, tileSize, tileSize);
 		}		
 	}
+
+	fill(0, 255, 0);
+	textFont('Courier New');
+	text(model.sourceCode, 10, model.grid.height * tileSize + 10);
 }
 
 
@@ -350,11 +362,17 @@ function render(model) {
 
 function keyTyped() {
 	if (charToCommandIndex[key] != null) {
-		state.stack.push(commands[charToCommandIndex[key]]);
+		Object.assign(state, {
+			sourceCode: state.sourceCode + key
+		});
+
 		return false;
 	} else if (keyCode == 13) {
 		// If "Enter" was typed...
-		state.stack = [];
+		Object.assign(state, {
+			sourceCode: ""
+		});
+
 		return false;
 	} else if (keyCode == 32) {
 		isPaused = !isPaused;
@@ -367,7 +385,9 @@ function keyTyped() {
 
 		return false;
 	} else if (keyCode == 8) {
-		state.stack.pop();
+		Object.assign(state, {
+			sourceCode: state.sourceCode.slice(0, state.sourceCode.length - 1)
+		});
 
 		return false;
 	} else {
