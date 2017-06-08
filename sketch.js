@@ -206,7 +206,7 @@ const rotateCommand = new Command({
 	transform: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 
-		const angle = Range.convert(mod, {
+		const angle = Range.convert(floor(mod), {
 			from: { lower: 0, upper: 10 },
 			// Offset output so the default mod = 0 still rotates.
 			to: { lower: 0 + 0.1, upper: TWO_PI + 0.1 }
