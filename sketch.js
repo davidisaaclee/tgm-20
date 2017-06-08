@@ -130,8 +130,8 @@ const desyncCommand = new Command({
 
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
-				if (y % (mod + 2) == 0) {
-					newGrid.tiles[x][y].color = chroma('white');
+				if (((y + floor(mod)) % 4) == 0) {
+					newGrid.tiles[x][y].color = chroma('lightgreen');
 				}
 			}
 		}
@@ -147,7 +147,7 @@ const desyncCommand = new Command({
 				if ((y % 2) == 0) {
 					newGrid.tiles[x][y].color = grid.tiles[x][y].color;
 				} else {
-					const offset = -1;
+					const offset = -(mod + 1);
 					const dstCoordinate = wrapGridCoordinate(x + offset, y, grid);
 
 					newGrid.tiles[dstCoordinate.x][dstCoordinate.y].color =
@@ -165,17 +165,22 @@ const rotateCommand = new Command({
 	makeSource: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 
+		const scaledMod = Range.convert(mod, {
+			from: { lower: 0, upper: 10 },
+			to: { lower: 0, upper: TWO_PI },
+		})
+
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
 				const xr = Range.convert(x, {
 					from: { lower: 0, upper: grid.width },
 					to: { lower: 0, upper: TWO_PI }
-				});
+				}) + scaledMod;
 
 				const yr = Range.convert(y, {
 					from: { lower: 0, upper: grid.height },
 					to: { lower: 0, upper: TWO_PI }
-				});
+				}) + scaledMod;
 
 				newGrid.tiles[x][y].color =
 					chroma.hsl(Math.cos(xr), Math.cos(yr), Math.cos(xr) - Math.sin(yr));
@@ -188,9 +193,15 @@ const rotateCommand = new Command({
 	transform: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 
+		const angle = Range.convert(mod, {
+			from: { lower: 0, upper: 10 },
+			// Offset output so the default mod = 0 still rotates.
+			to: { lower: 0 + 0.1, upper: TWO_PI + 0.1 }
+		});
+
+		// this is wrong
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
-				const angle = 0.3;
 				const centeringOffset = {
 					x: -grid.width / 2,
 					y: -grid.height / 2
@@ -243,6 +254,7 @@ const animateCommand = new Command({
 		}
 
 		mods[myIndex - 1] += dt;
+		mods[myIndex - 1] %= 10;
 
 		return mods;
 	}
