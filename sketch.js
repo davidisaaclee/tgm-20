@@ -51,7 +51,8 @@ function State(options) {
 	return Object.assign(this, {
 		grid: createGrid(opts.gridWidth, opts.gridHeight, chroma('black')),
 		// stack : [ { command : Command, mods : { stackIndex -> Float } } ]
-		stack: []
+		stack: [],
+		timestamp: 0
 	});
 }
 
@@ -66,7 +67,7 @@ function Command(options) {
 			return grid;
 		},
 
-		tick: function (dt, mods, myIndex) {
+		tick: function (timestamp, mods, myIndex) {
 			return mods;
 		}
 	}
@@ -258,14 +259,8 @@ const animateCommand = new Command({
 		return newGrid;
 	},
 
-	tick: function (dt, mods, myIndex) {
-		if (mods[myIndex - 1] == null) {
-			mods[myIndex - 1] = 0;
-		}
-
-		mods[myIndex - 1] += dt;
-		mods[myIndex - 1] %= 10;
-
+	tick: function (t, mods, myIndex) {
+		mods[myIndex - 1] = t % 10;
 		return mods;
 	}
 });
@@ -308,9 +303,14 @@ function draw() {
 }
 
 function tick(dt, model) {
-	model.stack = model.stack
-		.map((elm, idx) =>
-			Object.assign(elm, { mods: elm.command.tick(dt, elm.mods, idx) }));
+	const newTimestamp = model.timestamp + dt;
+
+	return Object.assign(model, {
+		stack: model.stack
+			.map((elm, idx) =>
+				Object.assign(elm, { mods: elm.command.tick(newTimestamp, elm.mods, idx) })),
+		timestamp: newTimestamp
+	});
 
 	return model;
 }
