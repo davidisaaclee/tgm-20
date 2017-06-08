@@ -52,8 +52,8 @@ function State(options) {
 		grid: createGrid(
 			opts.gridWidth,
 			opts.gridHeight,
-			chroma('black')),
-		sourceCode: "",
+			chroma('black').alpha(0)),
+		sourceCode: [],
 		timestamp: 0
 	});
 }
@@ -62,7 +62,7 @@ function State(options) {
 function Command(options) {
 	const defaultOptions = {
 		makeSource: function (grid, mod) {
-			return createGrid(grid.width, grid.height, chroma('black'));
+			return createGrid(grid.width, grid.height, chroma('black').alpha(0));
 		},
 
 		transform: function (grid, mod) {
@@ -195,8 +195,11 @@ const rotateCommand = new Command({
 				newGrid.tiles[x][y].color =
 					chroma.hsl(
 						Math.cos(xr),
-						Math.cos(yr), 
+						255, 
 						Math.cos(xr) - Math.sin(yr));
+				newGrid.tiles[x][y].color =
+					newGrid.tiles[x][y].color
+						.alpha(max(0.5, Math.cos(xr) - Math.sin(yr)) - 0.5);
 			}
 		}
 
@@ -268,7 +271,7 @@ const animateCommand = new Command({
 				if (x == scaledMod) {
 					newGrid.tiles[x][y].color = chroma('blue');
 				} else {
-					newGrid.tiles[x][y].color = chroma('black');
+					newGrid.tiles[x][y].color = chroma('black').alpha(0);
 				}
 			}
 		}
@@ -306,9 +309,10 @@ var state = new State({
 });
 
 function setup() {
-	createCanvas(
-		windowWidth,
-		windowHeight);
+	const canvas = createCanvas(
+		tileSize * 8,
+		tileSize * 6);
+	canvas.parent('stage');
 }
 
 function draw() {
@@ -330,8 +334,8 @@ function tick(dt, model) {
 
 const tileSize = 40;
 function render(model) {
-	function renderGrid() {
-		const stack = model.sourceCode
+	function renderGrid(stackSource) {
+		const stack = stackSource
 			.split('')
 			.map((char) => charToCommandIndex[char])
 			.filter((idx) => idx != null)
@@ -365,7 +369,7 @@ function render(model) {
 		noStroke();
 		for (var x = 0; x < model.grid.width; x++) {
 			for (var y = 0; y < model.grid.height; y++) {
-				fill(renderedGrid.tiles[x][y].color.hex());
+				fill(renderedGrid.tiles[x][y].color.css());
 				rect(x * tileSize, y * tileSize, tileSize, tileSize);
 			}		
 		}
@@ -374,12 +378,17 @@ function render(model) {
 	function drawSourceCode() {
 		fill(0, 255, 0);
 		textFont('Courier New');
-		text(model.sourceCode, 10, model.grid.height * tileSize + 10);
+		text(
+			model.sourceCode.join("\n"), 
+			10, 
+			model.grid.height * tileSize + 10, 
+			model.grid.width * tileSize,
+			height - model.grid.height * tileSize);
 	}
 
 	background(0);
-	drawGrid(renderGrid());
-	drawSourceCode();
+	model.sourceCode.forEach((line) => drawGrid(renderGrid(line)));
+	// drawSourceCode();
 }
 
 
@@ -387,20 +396,7 @@ function render(model) {
 // -- Events -- //
 
 function keyTyped() {
-	if (charToCommandIndex[key] != null) {
-		Object.assign(state, {
-			sourceCode: state.sourceCode + key
-		});
-
-		return false;
-	} else if (keyCode == 13) {
-		// If "Enter" was typed...
-		Object.assign(state, {
-			sourceCode: ""
-		});
-
-		return false;
-	} else if (keyCode == 32) {
+	if (keyCode == 32) {
 		isPaused = !isPaused;
 		if (isPaused) {
 			redraw(); 
@@ -411,16 +407,53 @@ function keyTyped() {
 
 		return false;
 	} else if (keyCode == 8) {
-		Object.assign(state, {
-			sourceCode: state.sourceCode
-				.slice(0, state.sourceCode.length - 1)
-		});
+		// Backspace was typed.
+		if (state.sourceCode.length == 0) {
+			return false;
+		}
+
+		// lol
+		var lastLine = state.sourceCode[state.sourceCode.length - 1];
+		if (lastLine.length == 0) {
+			state.sourceCode =
+				state.sourceCode.slice(0, state.sourceCode.length - 1);
+			var lastLine = state.sourceCode[state.sourceCode.length - 1];
+			lastLine = lastLine.slice(0, lastLine.length - 1);
+			state.sourceCode[state.sourceCode.length - 1] =
+				lastLine;
+		} else {
+			lastLine = lastLine.slice(0, lastLine.length - 1);
+			state.sourceCode[state.sourceCode.length - 1] =
+				lastLine;
+		}
 
 		return false;
 	} else {
 		// console.log(keyCode);
 		return true;
 	}
+}
+
+function handleInput(a) {
+	function isValidChar(char) {
+		if (charToCommandIndex[char] != null) {
+			return true;
+		}
+
+		if (char == '\n') {
+			return true;
+		}
+
+		return false;
+	}
+
+	state.sourceCode = a.value
+		.split('')
+		.filter(isValidChar)
+		.join('')
+		.split('\n');
+
+	a.value = state.sourceCode.join('\n');
 }
 
 
