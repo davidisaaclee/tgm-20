@@ -85,7 +85,7 @@ const colorCommand = new Command({
 	makeSource: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 
-		const hueOffset = Range.convert(mod, {
+		const hueOffset = Range.convert(floor(mod), {
 			from: { lower: 0, upper: 10 },
 			to: { lower: 0, upper: 360 }
 		});
@@ -104,7 +104,7 @@ const colorCommand = new Command({
 
 	transform: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
-		var scaledMod = Range.convert(mod, {
+		var scaledMod = Range.convert(floor(mod), {
 			from: { lower: 0, upper: 10 },
 			to: { lower: 0, upper: 360 }
 		})
@@ -254,30 +254,6 @@ const animateCommand = new Command({
 				}
 			}
 		}
-
-		return newGrid;
-	},
-
-	transform: function (grid, mod) {
-		var newGrid = cloneGrid(grid);
-
-		// // Offset by 1 so default mod = 0 still affects.
-		// const scaledMod = Range.convert(mod + 1, {
-		// 	from: { lower: 0 + 1, upper: 10 + 1 },
-		// 	to: { lower: 0, upper: grid.width },
-		// });
-
-		// for (var x = 0; x < grid.width; x++) {
-		// 	for (var y = 0; y < grid.height; y++) {
-		// 		if (x == scaledMod) {
-		// 			const dstCoordinate = 
-		// 				wrapGridCoordinate(grid, { x: x + scaledMod, y: y });
-
-		// 			newGrid.tiles[dstCoordinate.x][dstCoordinate.y].color =
-		// 				grid.tiles[x][y].color;
-		// 		}
-		// 	}
-		// }
 
 		return newGrid;
 	},
