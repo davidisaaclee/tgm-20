@@ -50,6 +50,7 @@ function State(options) {
 
 	return Object.assign(this, {
 		grid: createGrid(opts.gridWidth, opts.gridHeight, chroma('black')),
+		// stack : [ { command : Command, mods : { stackIndex -> Float } } ]
 		stack: []
 	});
 }
@@ -63,6 +64,10 @@ function Command(options) {
 
 		transform: function (grid, mod) {
 			return grid;
+		},
+
+		tick: function (dt, mods, myIndex) {
+			return mods;
 		}
 	}
 
@@ -71,7 +76,8 @@ function Command(options) {
 
 	return Object.assign(this, {
 		makeSource: opts.makeSource,
-		transform: opts.transform
+		transform: opts.transform,
+		tick: opts.tick
 	});
 }
 
@@ -79,13 +85,17 @@ const colorCommand = new Command({
 	makeSource: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 
+		const hueOffset = Range.convert(mod, {
+			from: { lower: 0, upper: 10 },
+			to: { lower: 0, upper: 360 }
+		});
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
 				const hue = Range.convert(x, {
 					from: { lower: 0, upper: grid.width },
 					to: { lower: 0, upper: 360 }
 				});
-				newGrid.tiles[x][y].color = chroma.hsl(hue, 1, 0.5);
+				newGrid.tiles[x][y].color = chroma.hsl((hue + hueOffset) % 360, 1, 0.5);
 			}
 		}
 
@@ -94,12 +104,16 @@ const colorCommand = new Command({
 
 	transform: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
+		var scaledMod = Range.convert(mod, {
+			from: { lower: 0, upper: 10 },
+			to: { lower: 0, upper: 360 }
+		})
 
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
 				const oldColor = grid.tiles[x][y].color;
 				const oldHue = oldColor.get('hsl.h');
-				const newHue = (oldHue + mod) % 360;
+				const newHue = (oldHue + scaledMod) % 360;
 
 				newGrid.tiles[x][y].color =
 					oldColor.set('hsl.h', newHue);
@@ -211,18 +225,46 @@ const rotateCommand = new Command({
 });
 
 
+
+const animateCommand = new Command({
+	makeSource: function (grid, mod) {
+		var newGrid = cloneGrid(grid);
+		return newGrid;
+	},
+
+	transform: function (grid, mod) {
+		var newGrid = cloneGrid(grid);
+		return newGrid;
+	},
+
+	tick: function (dt, mods, myIndex) {
+		if (mods[myIndex - 1] == null) {
+			mods[myIndex - 1] = 0;
+		}
+
+		mods[myIndex - 1] += dt;
+
+		return mods;
+	}
+});
+
+
+
+
 // -- Core -- //
 
 const commands = [
 	colorCommand,
 	desyncCommand,
-	rotateCommand
+	rotateCommand,
+	animateCommand
 ];
 
 const charToCommandIndex = {
 	'a': 0,
 	's': 1,
-	'd': 2
+	'd': 2,
+	'f': 3
 };
 
 var state = new State({ 
@@ -234,7 +276,6 @@ function setup() {
 	createCanvas(
 		windowWidth, 
 		windowHeight);
-	noLoop();
 }
 
 function draw() {
@@ -245,16 +286,26 @@ function draw() {
 }
 
 function tick(dt, model) {
+	model.stack = model.stack
+		.map((elm, idx) =>
+			Object.assign(elm, { mods: elm.command.tick(dt, elm.mods, idx) }));
+
 	return model;
 }
 
 const tileSize = 40;
 function render(model) {
-	const renderedGrid = model.stack.reduce((grid, cmd, idx) => {
+	const allMods = model.stack.map((elm) => elm.mods);
+	var mods = model.stack.map((_, stackIdx) =>
+		allMods
+			.filter((mod) => mod[stackIdx] != undefined)
+			.reduce((acc, mod) => acc + mod[stackIdx], 0));
+
+	const renderedGrid = model.stack.reduce((grid, elm, idx) => {
 		if (idx == 0) {
-			return cmd.makeSource(grid, idx);
+			return elm.command.makeSource(grid, mods[idx]);
 		} else {
-			return cmd.transform(grid, idx);
+			return elm.command.transform(grid, mods[idx]);
 		}
 	}, model.grid);
 
@@ -271,12 +322,29 @@ function render(model) {
 
 function keyTyped() {
 	if (charToCommandIndex[key] != null) {
-		state.stack.push(commands[charToCommandIndex[key]]);
-		redraw();
+		state.stack.push({ command: commands[charToCommandIndex[key]], mods: {} });
+		return false;
 	} else if (keyCode == 13) {
 		// If "Enter" was typed...
 		state.stack = [];
-		redraw();
+		return false;
+	} else if (keyCode == 32) {
+		isPaused = !isPaused;
+		if (isPaused) {
+			redraw(); 
+			noLoop();
+		} else {
+			loop();
+		}
+
+		return false;
+	} else if (keyCode == 8) {
+		state.stack.pop();
+
+		return false;
+	} else {
+		// console.log(keyCode);
+		return true;
 	}
 }
 
