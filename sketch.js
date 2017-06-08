@@ -50,7 +50,6 @@ function State(options) {
 
 	return Object.assign(this, {
 		grid: createGrid(opts.gridWidth, opts.gridHeight, chroma('black')),
-		// stack : [ { command : Command, mods : { stackIndex -> Float } } ]
 		stack: [],
 		timestamp: 0
 	});
@@ -67,8 +66,9 @@ function Command(options) {
 			return grid;
 		},
 
-		tick: function (timestamp, mods, myIndex) {
-			return mods;
+		// Returns an object mapping stack index to mod offset.
+		modOffsets: function (timestamp, myIndex) {
+			return {};
 		}
 	}
 
@@ -78,7 +78,7 @@ function Command(options) {
 	return Object.assign(this, {
 		makeSource: opts.makeSource,
 		transform: opts.transform,
-		tick: opts.tick
+		modOffsets: opts.modOffsets
 	});
 }
 
@@ -259,9 +259,8 @@ const animateCommand = new Command({
 		return newGrid;
 	},
 
-	tick: function (t, mods, myIndex) {
-		mods[myIndex - 1] = t % 10;
-		return mods;
+	modOffsets: function (t, myIndex) {
+		return { [myIndex - 1]: t % 10 }
 	}
 });
 
@@ -306,9 +305,6 @@ function tick(dt, model) {
 	const newTimestamp = model.timestamp + dt;
 
 	return Object.assign(model, {
-		stack: model.stack
-			.map((elm, idx) =>
-				Object.assign(elm, { mods: elm.command.tick(newTimestamp, elm.mods, idx) })),
 		timestamp: newTimestamp
 	});
 
@@ -317,17 +313,25 @@ function tick(dt, model) {
 
 const tileSize = 40;
 function render(model) {
-	const allMods = model.stack.map((elm) => elm.mods);
-	var mods = model.stack.map((_, stackIdx) =>
-		allMods
-			.filter((mod) => mod[stackIdx] != undefined)
-			.reduce((acc, mod) => acc + mod[stackIdx], 0));
+	// TODO: If mods are calculated from the top of the stack to the
+	// bottom, we could use `mod` within `modOffets`.
+	var mods = model.stack
+		.reduce(
+			(acc, elm, idx) => {
+				const offsets = elm.modOffsets(model.timestamp, idx);
+				Object.keys(offsets).forEach((key) => {
+					acc[key] += offsets[key];
+				});
+
+				return acc;
+			},
+			model.stack.map(() => 0));
 
 	const renderedGrid = model.stack.reduce((grid, elm, idx) => {
 		if (idx == 0) {
-			return elm.command.makeSource(grid, mods[idx]);
+			return elm.makeSource(grid, mods[idx]);
 		} else {
-			return elm.command.transform(grid, mods[idx]);
+			return elm.transform(grid, mods[idx]);
 		}
 	}, model.grid);
 
@@ -340,11 +344,13 @@ function render(model) {
 	}
 }
 
+
+
 // -- Events -- //
 
 function keyTyped() {
 	if (charToCommandIndex[key] != null) {
-		state.stack.push({ command: commands[charToCommandIndex[key]], mods: {} });
+		state.stack.push(commands[charToCommandIndex[key]]);
 		return false;
 	} else if (keyCode == 13) {
 		// If "Enter" was typed...
