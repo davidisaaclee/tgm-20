@@ -105,9 +105,9 @@ const colorCommand = new Command({
 	transform: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 		var scaledMod = Range.convert(floor(mod), {
-			from: { lower: 0, upper: 10 },
+			from: { lower: 0 - 1, upper: 10 - 1 },
 			to: { lower: 0, upper: 360 }
-		})
+		});
 
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
