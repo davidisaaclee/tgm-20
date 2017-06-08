@@ -307,7 +307,7 @@ var state = new State({
 
 function setup() {
 	createCanvas(
-		windowWidth, 
+		windowWidth,
 		windowHeight);
 }
 
@@ -330,47 +330,56 @@ function tick(dt, model) {
 
 const tileSize = 40;
 function render(model) {
-	background(0);
-	const stack = model.sourceCode
-		.split('')
-		.map((char) => charToCommandIndex[char])
-		.filter((idx) => idx != null)
-		.map((idx) => commands[idx])
-		.filter((cmd) => cmd != null);
+	function renderGrid() {
+		const stack = model.sourceCode
+			.split('')
+			.map((char) => charToCommandIndex[char])
+			.filter((idx) => idx != null)
+			.map((idx) => commands[idx])
+			.filter((cmd) => cmd != null);
 
-	// TODO: If mods are calculated from the top of the stack to the
-	// bottom, we could use `mod` within `modOffets`.
-	var mods = stack
-		.reduce(
-			(acc, elm, idx) => {
-				const offsets = elm.modOffsets(model.timestamp, idx);
-				Object.keys(offsets).forEach((key) => {
-					acc[key] += offsets[key];
-				});
+		// TODO: If mods are calculated from the top of the stack to the
+		// bottom, we could use `mod` within `modOffets`.
+		var mods = stack
+			.reduce(
+				(acc, elm, idx) => {
+					const offsets = elm.modOffsets(model.timestamp, idx);
+					Object.keys(offsets).forEach((key) => {
+						acc[key] += offsets[key];
+					});
 
-				return acc;
-			},
-			stack.map(() => 0));
+					return acc;
+				},
+				stack.map(() => 0));
 
-	const renderedGrid = stack.reduce((grid, elm, idx) => {
-		if (idx == 0) {
-			return elm.makeSource(grid, mods[idx]);
-		} else {
-			return elm.transform(grid, mods[idx]);
-		}
-	}, model.grid);
-
-	noStroke();
-	for (var x = 0; x < model.grid.width; x++) {
-		for (var y = 0; y < model.grid.height; y++) {
-			fill(renderedGrid.tiles[x][y].color.hex());
-			rect(x * tileSize, y * tileSize, tileSize, tileSize);
-		}		
+		return stack.reduce((grid, elm, idx) => {
+			if (idx == 0) {
+				return elm.makeSource(grid, mods[idx]);
+			} else {
+				return elm.transform(grid, mods[idx]);
+			}
+		}, model.grid);
 	}
 
-	fill(0, 255, 0);
-	textFont('Courier New');
-	text(model.sourceCode, 10, model.grid.height * tileSize + 10);
+	function drawGrid(renderedGrid) {
+		noStroke();
+		for (var x = 0; x < model.grid.width; x++) {
+			for (var y = 0; y < model.grid.height; y++) {
+				fill(renderedGrid.tiles[x][y].color.hex());
+				rect(x * tileSize, y * tileSize, tileSize, tileSize);
+			}		
+		}
+	}
+
+	function drawSourceCode() {
+		fill(0, 255, 0);
+		textFont('Courier New');
+		text(model.sourceCode, 10, model.grid.height * tileSize + 10);
+	}
+
+	background(0);
+	drawGrid(renderGrid());
+	drawSourceCode();
 }
 
 
