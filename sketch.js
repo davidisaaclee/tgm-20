@@ -32,265 +32,6 @@ const Range = {
 };
 
 
-
-// -- Core -- //
-
-
-const fps = 30;
-var timescale = 4;
-var isPaused = false;
-
-var tileWidth = 40;
-var tileHeight = 40;
-
-const modRange = 20;
-
-const gridSize = { width: 20, height: 20 };
-
-const commands = [
-	colorCommand,
-	desyncCommand,
-	rotateCommand,
-	animateCommand
-];
-
-const charToCommandIndex = {
-	'a': 0,
-	's': 1,
-	'd': 2,
-	'f': 3
-};
-
-var state = new State({ 
-	gridWidth: gridSize.width, 
-	gridHeight: gridSize.height
-});
-
-function updateTileSize() {
-	const frame = document.querySelector('#stage');
-	const bounds = frame.getBoundingClientRect();
-	tileWidth = bounds.width / gridSize.width;
-	tileHeight = bounds.height / gridSize.height;
-}
-
-function setup() {
-	updateTileSize();
-
-	const canvas = createCanvas(
-		tileWidth * gridSize.width,
-		tileHeight * gridSize.height);
-	canvas.parent('stage');
-}
-
-function draw() {
-	const dt = isPaused ? 0 : (timescale / fps);
-	state = tick(dt, state);
-
-	render(state);
-}
-
-function tick(dt, model) {
-	const newTimestamp = model.timestamp + dt;
-
-	return Object.assign(model, {
-		timestamp: newTimestamp
-	});
-
-	return model;
-}
-
-function render(model) {
-	function renderGrid(stackSource) {
-		const stack = stackSource
-			.split('')
-			.map((char) => charToCommandIndex[char])
-			.filter((idx) => idx != null)
-			.map((idx) => commands[idx])
-			.filter((cmd) => cmd != null);
-
-		// TODO: If mods are calculated from the top of the stack to the
-		// bottom, we could use `mod` within `modOffets`.
-		var mods = stack
-			.reduce(
-				(acc, elm, idx) => {
-					const offsets = elm.modOffsets(model.timestamp, idx);
-					Object.keys(offsets).forEach((key) => {
-						acc[key] += offsets[key];
-					});
-
-					return acc;
-				},
-				stack.map(() => 0));
-
-		return stack.reduce((grid, elm, idx) => {
-			if (idx == 0) {
-				return elm.makeSource(grid, mods[idx]);
-			} else {
-				return elm.transform(grid, mods[idx]);
-			}
-		}, model.grid);
-	}
-
-	function drawGrid(renderedGrid) {
-		noStroke();
-		for (var x = 0; x < model.grid.width; x++) {
-			for (var y = 0; y < model.grid.height; y++) {
-				fill(renderedGrid.tiles[x][y].color.css());
-				rect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
-			}		
-		}
-	}
-
-	function drawSourceCode() {
-		fill(0, 255, 0);
-		textFont('Courier New');
-		text(
-			model.sourceCode.join("\n"), 
-			10, 
-			model.grid.height * tileHeight + 10, 
-			model.grid.width * tileWidth,
-			height - model.grid.height * tileHeight);
-	}
-
-	background(0);
-	model.sourceCode.forEach((line) => drawGrid(renderGrid(line)));
-	// drawSourceCode();
-}
-
-
-
-// -- Events -- //
-
-function keyTyped() {
-	if (keyCode == 32) {
-		isPaused = !isPaused;
-		if (isPaused) {
-			redraw(); 
-			noLoop();
-		} else {
-			loop();
-		}
-
-		return false;
-	} else if (keyCode == 8) {
-		// Backspace was typed.
-		backspace();
-		return false;
-	} else {
-		// console.log(keyCode);
-		return true;
-	}
-}
-
-function handleInput(a) {
-	function isValidChar(char) {
-		if (charToCommandIndex[char] != null) {
-			return true;
-		}
-
-		if (char == '\n') {
-			return true;
-		}
-
-		return false;
-	}
-
-	state.sourceCode = a.value
-		.split('')
-		.filter(isValidChar)
-		.join('')
-		.split('\n');
-
-	a.value = state.sourceCode.join('\n');
-}
-
-function simulateKeypress(char) {
-	const textarea = document.querySelector('#source-code');
-	if (char == 'BACKSPACE')  {
-		backspace();
-		textarea.value = state.sourceCode.join('\n');
-		handleInput(textarea);
-	} else {
-		textarea.value += char;
-	}
-	handleInput(textarea);
-}
-
-
-function windowResized() {
-	updateTileSize();
-	resizeCanvas(
-		tileWidth * gridSize.width,
-		tileHeight * gridSize.height);
-}
-
-// -- Helpers -- //
-
-function backspace() {
-	if (state.sourceCode.length == 0) {
-		return;
-	}
-
-	// lol
-	var lastLine = state.sourceCode[state.sourceCode.length - 1];
-	if (lastLine.length == 0) {
-		state.sourceCode =
-			state.sourceCode.slice(0, state.sourceCode.length - 1);
-		var lastLine = state.sourceCode[state.sourceCode.length - 1];
-		lastLine = lastLine.slice(0, lastLine.length - 1);
-		state.sourceCode[state.sourceCode.length - 1] =
-			lastLine;
-	} else {
-		lastLine = lastLine.slice(0, lastLine.length - 1);
-		state.sourceCode[state.sourceCode.length - 1] =
-			lastLine;
-	}
-}
-
-function createGrid(width, height, color) {
-	const createColor = typeof color === 'function'
-		? color
-		: () => color;
-
-	var tiles = [];
-	for (var x = 0; x < width; x++) {
-		tiles.push([]);
-		for (var y = 0; y < height; y++) {
-			tiles[x].push({ color: createColor(x, y) });
-		}
-	}
-
-	return {
-		width: width,
-		height: height,
-		tiles: tiles,
-	};
-}
-
-function cloneGrid(grid) {
-	return createGrid(
-		grid.width, 
-		grid.height,
-		(x, y) => grid.tiles[x][y].color);
-}
-
-function wrapGridCoordinate(x, y, grid) {
-	return {
-		x: floor(Math.abs(grid.width + x) % grid.width),
-		y: floor(Math.abs(grid.height + y) % grid.height),
-	};
-}
-
-function applyTransform(matrix, vector) {
-	return {
-		x: matrix[0][0] * vector.x + matrix[0][1] * vector.y,
-		y: matrix[1][0] * vector.x + matrix[1][1] * vector.y
-	};
-}
-
-
-
-
 // -- Types -- //
 
 function State(options) {
@@ -539,3 +280,269 @@ const animateCommand = new Command({
 });
 
 
+
+
+
+// -- Core -- //
+
+const fps = 30;
+var timescale = 4;
+var isPaused = false;
+
+var tileWidth = 40;
+var tileHeight = 40;
+
+const modRange = 20;
+
+const gridSize = { width: 20, height: 20 };
+
+const commands = [
+	colorCommand,
+	desyncCommand,
+	rotateCommand,
+	animateCommand
+];
+
+const charToCommandIndex = {
+	'a': 0,
+	's': 1,
+	'd': 2,
+	'f': 3
+};
+
+var state = new State({ 
+	gridWidth: gridSize.width, 
+	gridHeight: gridSize.height
+});
+
+function updateTileSize() {
+	const frame = document.querySelector('#stage');
+	const bounds = frame.getBoundingClientRect();
+	tileWidth = bounds.width / gridSize.width;
+	tileHeight = bounds.height / gridSize.height;
+}
+
+function setup() {
+	updateTileSize();
+
+	const canvas = createCanvas(
+		tileWidth * gridSize.width,
+		tileHeight * gridSize.height);
+	canvas.parent('stage');
+}
+
+function draw() {
+	const dt = isPaused ? 0 : (timescale / fps);
+	state = tick(dt, state);
+
+	render(state);
+}
+
+function tick(dt, model) {
+	const newTimestamp = model.timestamp + dt;
+
+	return Object.assign(model, {
+		timestamp: newTimestamp
+	});
+
+	return model;
+}
+
+function render(model) {
+	function renderGrid(stackSource) {
+		const stack = stackSource
+			.split('')
+			.map((char) => charToCommandIndex[char])
+			.filter((idx) => idx != null)
+			.map((idx) => commands[idx])
+			.filter((cmd) => cmd != null);
+
+		// TODO: If mods are calculated from the top of the stack to the
+		// bottom, we could use `mod` within `modOffets`.
+		var mods = stack
+			.reduce(
+				(acc, elm, idx) => {
+					const offsets = elm.modOffsets(model.timestamp, idx);
+					Object.keys(offsets).forEach((key) => {
+						acc[key] += offsets[key];
+					});
+
+					return acc;
+				},
+				stack.map(() => 0));
+
+		return stack.reduce((grid, elm, idx) => {
+			if (idx == 0) {
+				return elm.makeSource(grid, mods[idx]);
+			} else {
+				return elm.transform(grid, mods[idx]);
+			}
+		}, model.grid);
+	}
+
+	function drawGrid(renderedGrid) {
+		noStroke();
+		for (var x = 0; x < model.grid.width; x++) {
+			for (var y = 0; y < model.grid.height; y++) {
+				fill(renderedGrid.tiles[x][y].color.css());
+				rect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+			}		
+		}
+	}
+
+	background(0);
+	model.sourceCode
+		.forEach((line) => drawGrid(renderGrid(line)));
+}
+
+
+
+// -- Events -- //
+
+function keyTyped() {
+	if (keyCode == 32) {
+		isPaused = !isPaused;
+		if (isPaused) {
+			redraw(); 
+			noLoop();
+		} else {
+			loop();
+		}
+
+		return false;
+	} else if (keyCode == 8) {
+		// Backspace was typed.
+		backspace();
+		return false;
+	} else {
+		// console.log(keyCode);
+		return true;
+	}
+}
+
+function handleInput(a) {
+	function isValidChar(char) {
+		if (charToCommandIndex[char] != null) {
+			return true;
+		}
+
+		if (char == '\n') {
+			return true;
+		}
+
+		return false;
+	}
+
+	state.sourceCode = a.value
+		.split('')
+		.filter(isValidChar)
+		.join('')
+		.split('\n');
+
+	a.value = state.sourceCode.join('\n');
+}
+
+function simulateKeypress(char) {
+	const textarea = document.querySelector('#source-code');
+	if (char == 'BACKSPACE')  {
+		backspace();
+		textarea.value = state.sourceCode.join('\n');
+		handleInput(textarea);
+	} else {
+		textarea.value += char;
+	}
+	handleInput(textarea);
+}
+
+
+function windowResized() {
+	updateTileSize();
+	resizeCanvas(
+		tileWidth * gridSize.width,
+		tileHeight * gridSize.height);
+}
+
+// -- Helpers -- //
+
+function backspace() {
+	if (state.sourceCode.length == 0) {
+		return;
+	}
+
+	// lol
+	var lastLine = state.sourceCode[state.sourceCode.length - 1];
+	if (lastLine.length == 0) {
+		state.sourceCode =
+			state.sourceCode.slice(0, state.sourceCode.length - 1);
+		var lastLine = state.sourceCode[state.sourceCode.length - 1];
+		lastLine = lastLine.slice(0, lastLine.length - 1);
+		state.sourceCode[state.sourceCode.length - 1] =
+			lastLine;
+	} else {
+		lastLine = lastLine.slice(0, lastLine.length - 1);
+		state.sourceCode[state.sourceCode.length - 1] =
+			lastLine;
+	}
+}
+
+function createGrid(width, height, color) {
+	const createColor = typeof color === 'function'
+		? color
+		: () => color;
+
+	var tiles = [];
+	for (var x = 0; x < width; x++) {
+		tiles.push([]);
+		for (var y = 0; y < height; y++) {
+			tiles[x].push({ color: createColor(x, y) });
+		}
+	}
+
+	return {
+		width: width,
+		height: height,
+		tiles: tiles,
+	};
+}
+
+function cloneGrid(grid) {
+	return createGrid(
+		grid.width, 
+		grid.height,
+		(x, y) => grid.tiles[x][y].color);
+}
+
+function wrapGridCoordinate(x, y, grid) {
+	return {
+		x: floor(Math.abs(grid.width + x) % grid.width),
+		y: floor(Math.abs(grid.height + y) % grid.height),
+	};
+}
+
+function applyTransform(matrix, vector) {
+	return {
+		x: matrix[0][0] * vector.x + matrix[0][1] * vector.y,
+		y: matrix[1][0] * vector.x + matrix[1][1] * vector.y
+	};
+}
+
+/*
+Merges two objects using custom merge logic.
+
+const reducer = (targetField, extField, key) => {
+	if (targetField == null) {
+		return extField;
+	} else {
+		return extField + targetField;
+	}
+};
+mergeBy(reducer, { a: 3, c: 0 }, { a: 2, b: 1 }, )
+==> { a: 5, b: 1, c: 0 }
+*/
+function mergeBy(reducer, target, extensions) {
+	return Object.keys(extensions)
+		.reduce((acc, key) => {
+			acc[key] = reducer(acc[key], extensions[key], key)
+			return acc;
+		}, target);
+}
