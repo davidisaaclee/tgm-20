@@ -108,7 +108,7 @@ const colorCommand = new Command({
 	transform: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 		var scaledMod = Range.convert(floor(mod), {
-			from: { lower: 0 - 1, upper: 10 - 1 },
+			from: { lower: 0 - 1, upper: modRange - 1 },
 			to: { lower: 0, upper: 360 }
 		});
 
@@ -208,7 +208,7 @@ const rotateCommand = new Command({
 		var newGrid = cloneGrid(grid);
 
 		const angle = Range.convert(floor(mod), {
-			from: { lower: 0, upper: 10 },
+			from: { lower: 0, upper: modRange },
 			// Offset output so the default mod = 0 still rotates.
 			to: { lower: 0 + 0.1, upper: TWO_PI + 0.1 }
 		});
@@ -258,7 +258,7 @@ const animateCommand = new Command({
 		const scaledMod = floor(Range.convert(mod, {
 			from: {
 				lower: 0,
-				upper: 10 },
+				upper: modRange },
 			to: {
 				lower: grid.width / 2,
 				upper: grid.width / 2 + grid.width },
