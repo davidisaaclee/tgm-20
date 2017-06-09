@@ -346,6 +346,46 @@ const offsetModCommand = new Command({
 	makeSource: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 
+		const leftEye =
+			wrapGridCoordinate(
+				grid.width / 3, 
+				grid.width / 3, 
+				grid);
+
+		const rightEye =
+			wrapGridCoordinate(
+				grid.width - grid.width / 3,
+				grid.width / 3,
+				grid);
+
+		const scaledMod = TWO_PI * mod / modRange;
+		// const offset = (x) => floor(Math.sin(2 + scaledMod + x * 0.4) * 2) ;
+		const offset = (x) => floor(Math.sin(x + scaledMod) * 1.2) ;
+
+		var smile = [
+			{ x: 5, y: offset(3) + 12 },
+			{ x: 6, y: offset(2) + 12 },
+			{ x: 7, y: offset(1) + 13 },
+			{ x: 8, y: offset(0) + 14 },
+			{ x: 9, y: offset(0) + 14 },
+			{ x: 10, y: offset(0) + 14 },
+			{ x: 11, y: offset(0) + 14 },
+			{ x: 12, y: offset(1) + 13 },
+			{ x: 13, y: offset(2) + 12 },
+			{ x: 14, y: offset(3) + 12 },
+		];
+
+		newGrid.tiles[leftEye.x][leftEye.y].color =
+			chroma('#0ff');
+		newGrid.tiles[rightEye.x][rightEye.y].color =
+			chroma('#0ff');
+
+		smile.forEach((p) => {
+			newGrid.tiles[p.x][p.y].color =
+				chroma('#0ff');
+		});
+			
+
 		return newGrid;
 	},
 
