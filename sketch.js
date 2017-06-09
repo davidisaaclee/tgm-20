@@ -357,15 +357,29 @@ function render(model) {
 			.map((idx) => commands[idx])
 			.filter((cmd) => cmd != null);
 
-		const addWithNullFallbackToZero = (target, ext, key) =>
-			nullFallback(target, 0) + nullFallback(ext, 0);
+		// Reverse stack so that we can accumulate mods from top to bottom.
+		// This lets us use a command's own mod in its modsOffset method.
+		stack.reverse();
+
+		// Takes the reversed index of `stack` and returns the original index.
+		const unreverseStackIndex = (idx) => (stack.length - 1) - idx;
 
 		var mods = stack
-			.reduce((acc, elm, idx) =>
-				mergeBy(
-					addWithNullFallbackToZero, 
-					acc, 
-					elm.modOffsets(model.timestamp, idx)), {});
+			.reduce(
+				(acc, elm, idx) =>
+					// Merge the accumulated mods (`acc`) with the mods generated
+					// by the call to `modOffsets` by adding them together.
+					mergeBy(
+						(target, ext) =>
+							nullFallback(target, 0) + nullFallback(ext, 0), 
+						acc, 
+						elm.modOffsets(
+							model.timestamp, 
+							unreverseStackIndex(idx),
+							nullFallback(acc[idx], 0))),
+				{});
+
+		stack.reverse();
 
 		return stack.reduce((grid, elm, idx) => {
 			if (idx == 0) {
