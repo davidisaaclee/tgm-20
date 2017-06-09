@@ -419,25 +419,7 @@ function keyTyped() {
 		return false;
 	} else if (keyCode == 8) {
 		// Backspace was typed.
-		if (state.sourceCode.length == 0) {
-			return false;
-		}
-
-		// lol
-		var lastLine = state.sourceCode[state.sourceCode.length - 1];
-		if (lastLine.length == 0) {
-			state.sourceCode =
-				state.sourceCode.slice(0, state.sourceCode.length - 1);
-			var lastLine = state.sourceCode[state.sourceCode.length - 1];
-			lastLine = lastLine.slice(0, lastLine.length - 1);
-			state.sourceCode[state.sourceCode.length - 1] =
-				lastLine;
-		} else {
-			lastLine = lastLine.slice(0, lastLine.length - 1);
-			state.sourceCode[state.sourceCode.length - 1] =
-				lastLine;
-		}
-
+		backspace();
 		return false;
 	} else {
 		// console.log(keyCode);
@@ -467,6 +449,18 @@ function handleInput(a) {
 	a.value = state.sourceCode.join('\n');
 }
 
+function simulateKeypress(char) {
+	const textarea = document.querySelector('#source-code');
+	if (char == 'BACKSPACE')  {
+		backspace();
+		textarea.value = state.sourceCode.join('\n');
+		handleInput(textarea);
+	} else {
+		textarea.value += char;
+	}
+	handleInput(textarea);
+}
+
 
 function windowResized() {
 	updateTileSize();
@@ -476,6 +470,27 @@ function windowResized() {
 }
 
 // -- Helpers -- //
+
+function backspace() {
+	if (state.sourceCode.length == 0) {
+		return;
+	}
+
+	// lol
+	var lastLine = state.sourceCode[state.sourceCode.length - 1];
+	if (lastLine.length == 0) {
+		state.sourceCode =
+			state.sourceCode.slice(0, state.sourceCode.length - 1);
+		var lastLine = state.sourceCode[state.sourceCode.length - 1];
+		lastLine = lastLine.slice(0, lastLine.length - 1);
+		state.sourceCode[state.sourceCode.length - 1] =
+			lastLine;
+	} else {
+		lastLine = lastLine.slice(0, lastLine.length - 1);
+		state.sourceCode[state.sourceCode.length - 1] =
+			lastLine;
+	}
+}
 
 function createGrid(width, height, color) {
 	const createColor = typeof color === 'function'

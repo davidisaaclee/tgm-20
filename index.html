@@ -21,6 +21,14 @@
 			align-items: center;
 		}
 
+		.cmd-key {
+			fill: white;
+		}
+
+		.cmd-key:hover {
+			fill: #0f0;
+		}
+
 		canvas {
 			position: fixed;
 		}
@@ -31,7 +39,6 @@
 		}
 
 		#stage {
-			background-color: #f00;
 			width: 100%;
 			height: 100%;
 		}
@@ -77,14 +84,22 @@
 			<rect x="22.2" y="94" width="83.2" height="25.9"/>
 			<rect x="47" y="79" width="33.8" height="25.9"/>
 			<g>
-				<rect x="30.3" y="110.5" fill="#FFFFFF" width="8.4" height="8.7"/>
-				<rect x="38.8" y="101.8" fill="#FFFFFF" width="8.4" height="8.7"/>
-				<rect x="47.2" y="110.5" fill="#FFFFFF" width="8.4" height="8.7"/>
-				<rect x="55.6" y="101.8" fill="#FFFFFF" width="8.4" height="8.7"/>
-				<rect x="64" y="110.5" fill="#FFFFFF" width="8.4" height="8.7"/>
-				<rect x="72.4" y="101.8" fill="#FFFFFF" width="8.4" height="8.7"/>
-				<rect x="80.8" y="110.5" fill="#FFFFFF" width="8.4" height="8.7"/>
-				<rect x="89.2" y="101.8" fill="#FFFFFF" width="8.4" height="8.7"/>
+				<rect class="cmd-key" onclick="simulateKeypress('BACKSPACE')"
+					x="30.3" y="110.5" fill="#FFFFFF" width="8.4" height="8.7"/>
+				<rect class="cmd-key" onclick="simulateKeypress('a')"
+					x="38.8" y="101.8" fill="#FFFFFF" width="8.4" height="8.7"/>
+				<rect class="cmd-key" onclick="simulateKeypress('s')"
+					x="47.2" y="110.5" fill="#FFFFFF" width="8.4" height="8.7"/>
+				<rect class="cmd-key" onclick="simulateKeypress('d')"
+					x="55.6" y="101.8" fill="#FFFFFF" width="8.4" height="8.7"/>
+				<rect class="cmd-key" onclick="simulateKeypress('f')"
+					x="64" y="110.5" fill="#FFFFFF" width="8.4" height="8.7"/>
+				<rect class="cmd-key" onclick="simulateKeypress('j')"
+					x="72.4" y="101.8" fill="#FFFFFF" width="8.4" height="8.7"/>
+				<rect class="cmd-key" onclick="simulateKeypress('k')"
+					x="80.8" y="110.5" fill="#FFFFFF" width="8.4" height="8.7"/>
+				<rect class="cmd-key" onclick="simulateKeypress('\n')"
+					x="89.2" y="101.8" fill="#FFFFFF" width="8.4" height="8.7"/>
 			</g>
 		</g>
 	</svg>
