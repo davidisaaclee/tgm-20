@@ -65,7 +65,7 @@ function Command(options) {
 		},
 
 		// Returns an object mapping stack index to mod offset.
-		modOffsets: function (timestamp, myIndex) {
+		modOffsets: function (timestamp, myIndex, myMod) {
 			return {};
 		}
 	}
@@ -274,8 +274,8 @@ const animateCommand = new Command({
 		return newGrid;
 	},
 
-	modOffsets: function (t, myIndex) {
-		return { [myIndex - 1]: t % 10 }
+	modOffsets: function (t, myIndex, myMod) {
+		return { [myIndex - 1]: (t + myMod) % modRange }
 	}
 });
 
@@ -286,7 +286,7 @@ const animateCommand = new Command({
 // -- Core -- //
 
 const fps = 30;
-var timescale = 4;
+var timescale = 1;
 var isPaused = false;
 
 var tileWidth = 40;
@@ -376,7 +376,7 @@ function render(model) {
 						elm.modOffsets(
 							model.timestamp, 
 							unreverseStackIndex(idx),
-							nullFallback(acc[idx], 0))),
+							nullFallback(acc[unreverseStackIndex(idx)], 0))),
 				{});
 
 		stack.reverse();
