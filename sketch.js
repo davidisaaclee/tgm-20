@@ -647,17 +647,18 @@ function applyTransform(matrix, vector) {
 }
 
 /*
-Merges two objects using custom merge logic.
+Merges two objects using a custom reduction.
 
-const reducer = (targetField, extField, key) => {
-	if (targetField == null) {
-		return extField;
-	} else {
-		return extField + targetField;
-	}
-};
-mergeBy(reducer, { a: 3, c: 0 }, { a: 2, b: 1 }, )
-==> { a: 5, b: 1, c: 0 }
+		const reducer = (targetField, extField, key) => {
+			if (targetField == null) {
+				return extField;
+			} else {
+				return extField + targetField;
+			}
+		};
+		mergeBy(reducer, { a: 3, c: 0 }, { a: 2, b: 1 }, )
+		==> { a: 5, b: 1, c: 0 }
+		
 */
 function mergeBy(reducer, target, extensions) {
 	return Object.keys(extensions)
