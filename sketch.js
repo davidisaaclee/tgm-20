@@ -303,7 +303,7 @@ const mirrorCommand = new Command({
 	transform: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 
-		const scaledMod = floor(mod % 2);
+		const scaledMod = floor(mod % 3);
 
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
@@ -326,6 +326,12 @@ const mirrorCommand = new Command({
 							newGrid.tiles[x][y] =
 								grid.tiles[x][y];
 						}
+						break;
+
+					case 2:
+						newGrid.tiles[x][y].color = chroma.mix(
+							grid.tiles[((grid.width - 1) - x)][y].color,
+							grid.tiles[x][y].color);
 						break;
 				}
 			}
