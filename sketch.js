@@ -286,13 +286,14 @@ const animateCommand = new Command({
 const mirrorCommand = new Command({
 	makeSource: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
+		const chonk = floor(Math.sin(mod) * 5 + 5 + 2);
 
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
-				newGrid.tiles[x][y].color =
-					(grid.tiles[x][y].color.luminance() > 0.3)
-						? chroma('black').alpha(0)
-						: chroma('red');
+				if (floor(x + y + 0.5 * chonk) % chonk < (chonk / 2)) {
+					newGrid.tiles[x][y].color = chroma('#ff0');
+				}
+					
 			}
 		}
 
@@ -342,10 +343,10 @@ const commands = [
 ];
 
 const charToCommandIndex = {
-	'a': 0,
+	'f': 0,
 	's': 1,
 	'd': 2,
-	'f': 3,
+	'a': 3,
 	'j': 4
 };
 
@@ -428,7 +429,7 @@ function render(model) {
 			for (var y = 0; y < model.grid.height; y++) {
 				fill(renderedGrid.tiles[x][y].color.css());
 				rect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
-			}		
+			}
 		}
 	}
 
