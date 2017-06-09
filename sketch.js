@@ -32,255 +32,6 @@ const Range = {
 };
 
 
-// -- Types -- //
-
-function State(options) {
-	const defaultOptions = {
-		gridWidth: 10,
-		gridHeight: 10
-	};
-
-	const opts =
-		Object.assign({}, defaultOptions, options);
-
-	return Object.assign(this, {
-		grid: createGrid(
-			opts.gridWidth,
-			opts.gridHeight,
-			chroma('black').alpha(0)),
-		sourceCode: [],
-		timestamp: 0
-	});
-}
-
-
-function Command(options) {
-	const defaultOptions = {
-		makeSource: function (grid, mod) {
-			return createGrid(grid.width, grid.height, chroma('black').alpha(0));
-		},
-
-		transform: function (grid, mod) {
-			return grid;
-		},
-
-		// Returns an object mapping stack index to mod offset.
-		modOffsets: function (timestamp, myIndex) {
-			return {};
-		}
-	}
-
-	const opts =
-		Object.assign({}, defaultOptions, options);
-
-	return Object.assign(this, {
-		makeSource: opts.makeSource,
-		transform: opts.transform,
-		modOffsets: opts.modOffsets
-	});
-}
-
-const colorCommand = new Command({
-	makeSource: function (grid, mod) {
-		var newGrid = cloneGrid(grid);
-
-		const hueOffset = Range.convert(floor(mod), {
-			from: { lower: 0, upper: modRange },
-			to: { lower: 0, upper: 360 }
-		});
-		for (var x = 0; x < grid.width; x++) {
-			for (var y = 0; y < grid.height; y++) {
-				const hue = Range.convert(x, {
-					from: { lower: 0, upper: grid.width },
-					to: { lower: 0, upper: 360 }
-				});
-				newGrid.tiles[x][y].color =
-					chroma.hsl((hue + hueOffset) % 360, 1, 0.5);
-			}
-		}
-
-		return newGrid;
-	},
-
-	transform: function (grid, mod) {
-		var newGrid = cloneGrid(grid);
-		var scaledMod = Range.convert(floor(mod), {
-			from: { lower: 0 - 1, upper: 10 - 1 },
-			to: { lower: 0, upper: 360 }
-		});
-
-		for (var x = 0; x < grid.width; x++) {
-			for (var y = 0; y < grid.height; y++) {
-				const oldColor = grid.tiles[x][y].color;
-				const oldHue = oldColor.get('hsl.h');
-				const newHue = (oldHue + scaledMod) % 360;
-
-				newGrid.tiles[x][y].color =
-					oldColor.set('hsl.h', newHue);
-			}
-		}
-
-		return newGrid;
-	},
-});
-
-const desyncCommand = new Command({
-	makeSource: function (grid, mod) {
-		var newGrid = cloneGrid(grid);
-
-		for (var x = 0; x < grid.width; x++) {
-			for (var y = 0; y < grid.height; y++) {
-				if (((y + floor(mod)) % 4) == 0) {
-					newGrid.tiles[x][y].color = chroma('#0f0');
-				}
-			}
-		}
-
-		return newGrid;
-	},
-
-	transform: function (grid, mod) {
-		var newGrid = cloneGrid(grid);
-		const scaledMod = floor(Range.convert(mod, {
-			from: { lower: 0, upper: modRange },
-			to: { lower: 0, upper: grid.width }
-		}));
-
-		for (var x = 0; x < grid.width; x++) {
-			for (var y = 0; y < grid.height; y++) {
-				if ((y % 2) == 0) {
-					newGrid.tiles[x][y].color = grid.tiles[x][y].color;
-				} else {
-					const offset = -(scaledMod + 1);
-					const dstCoordinate =
-						wrapGridCoordinate(x + offset, y, grid);
-
-					newGrid.tiles[dstCoordinate.x][dstCoordinate.y].color =
-						grid.tiles[x][y].color;
-				}
-			}
-		}
-
-		return newGrid;
-	},
-});
-
-
-const rotateCommand = new Command({
-	makeSource: function (grid, mod) {
-		var newGrid = cloneGrid(grid);
-
-		const scaledMod = Range.convert(mod, {
-			from: { lower: 0, upper: modRange },
-			to: { lower: 0, upper: TWO_PI },
-		})
-
-		for (var x = 0; x < grid.width; x++) {
-			for (var y = 0; y < grid.height; y++) {
-				const xr = Range.convert(x, {
-					from: { lower: 0, upper: grid.width },
-					to: { lower: 0, upper: TWO_PI }
-				}) + scaledMod;
-
-				const yr = Range.convert(y, {
-					from: { lower: 0, upper: grid.height },
-					to: { lower: 0, upper: TWO_PI }
-				}) + scaledMod;
-
-				newGrid.tiles[x][y].color =
-					chroma.hsl(
-						Math.cos(xr),
-						255, 
-						Math.cos(xr) - Math.sin(yr));
-				newGrid.tiles[x][y].color =
-					newGrid.tiles[x][y].color
-						.alpha(max(0.5, Math.cos(xr) - Math.sin(yr)) - 0.5);
-			}
-		}
-
-		return newGrid;
-	},
-
-	transform: function (grid, mod) {
-		var newGrid = cloneGrid(grid);
-
-		const angle = Range.convert(floor(mod), {
-			from: { lower: 0, upper: 10 },
-			// Offset output so the default mod = 0 still rotates.
-			to: { lower: 0 + 0.1, upper: TWO_PI + 0.1 }
-		});
-
-		// this is wrong
-		for (var x = 0; x < grid.width; x++) {
-			for (var y = 0; y < grid.height; y++) {
-				const centeringOffset = {
-					x: -grid.width / 2,
-					y: -grid.height / 2
-				};
-				const rotationMatrix = [
-					[Math.cos(angle), -Math.sin(angle)],
-					[Math.sin(angle), Math.cos(angle)]
-				];
-
-				// Offset grid so that origin is in center of display.
-				const offsetX = x + centeringOffset.x;
-				const offsetY = y + centeringOffset.y;
-
-				// Rotate around center of display.
-				const rotatedPoint =
-					applyTransform(rotationMatrix, { x: offsetX, y: offsetY });
-
-				// Unoffset grid to bring back to original centering.
-				const unoffsetX = rotatedPoint.x - centeringOffset.x;
-				const unoffsetY = rotatedPoint.y - centeringOffset.y;
-
-				// Wrap coordinate to grid.
-				const dstCoordinate =
-					wrapGridCoordinate(unoffsetX, unoffsetY, grid);
-
-				newGrid.tiles[dstCoordinate.x][dstCoordinate.y] =
-					grid.tiles[x][y];
-			}
-		}
-
-		return newGrid;
-	},
-});
-
-
-
-const animateCommand = new Command({
-	makeSource: function (grid, mod) {
-		var newGrid = cloneGrid(grid);
-		const scaledMod = floor(Range.convert(mod, {
-			from: {
-				lower: 0,
-				upper: 10 },
-			to: {
-				lower: grid.width / 2,
-				upper: grid.width / 2 + grid.width },
-		})) % grid.width;
-
-		for (var x = 0; x < grid.width; x++) {
-			for (var y = 0; y < grid.height; y++) {
-				if (x == scaledMod) {
-					newGrid.tiles[x][y].color = chroma('blue');
-				} else {
-					newGrid.tiles[x][y].color = chroma('black').alpha(0);
-				}
-			}
-		}
-
-		return newGrid;
-	},
-
-	modOffsets: function (t, myIndex) {
-		return { [myIndex - 1]: t % 10 }
-	}
-});
-
-
-
 
 // -- Core -- //
 
@@ -536,3 +287,255 @@ function applyTransform(matrix, vector) {
 		y: matrix[1][0] * vector.x + matrix[1][1] * vector.y
 	};
 }
+
+
+
+
+// -- Types -- //
+
+function State(options) {
+	const defaultOptions = {
+		gridWidth: 10,
+		gridHeight: 10
+	};
+
+	const opts =
+		Object.assign({}, defaultOptions, options);
+
+	return Object.assign(this, {
+		grid: createGrid(
+			opts.gridWidth,
+			opts.gridHeight,
+			chroma('black').alpha(0)),
+		sourceCode: [],
+		timestamp: 0
+	});
+}
+
+
+function Command(options) {
+	const defaultOptions = {
+		makeSource: function (grid, mod) {
+			return createGrid(grid.width, grid.height, chroma('black').alpha(0));
+		},
+
+		transform: function (grid, mod) {
+			return grid;
+		},
+
+		// Returns an object mapping stack index to mod offset.
+		modOffsets: function (timestamp, myIndex) {
+			return {};
+		}
+	}
+
+	const opts =
+		Object.assign({}, defaultOptions, options);
+
+	return Object.assign(this, {
+		makeSource: opts.makeSource,
+		transform: opts.transform,
+		modOffsets: opts.modOffsets
+	});
+}
+
+const colorCommand = new Command({
+	makeSource: function (grid, mod) {
+		var newGrid = cloneGrid(grid);
+
+		const hueOffset = Range.convert(floor(mod), {
+			from: { lower: 0, upper: modRange },
+			to: { lower: 0, upper: 360 }
+		});
+		for (var x = 0; x < grid.width; x++) {
+			for (var y = 0; y < grid.height; y++) {
+				const hue = Range.convert(x, {
+					from: { lower: 0, upper: grid.width },
+					to: { lower: 0, upper: 360 }
+				});
+				newGrid.tiles[x][y].color =
+					chroma.hsl((hue + hueOffset) % 360, 1, 0.5);
+			}
+		}
+
+		return newGrid;
+	},
+
+	transform: function (grid, mod) {
+		var newGrid = cloneGrid(grid);
+		var scaledMod = Range.convert(floor(mod), {
+			from: { lower: 0 - 1, upper: 10 - 1 },
+			to: { lower: 0, upper: 360 }
+		});
+
+		for (var x = 0; x < grid.width; x++) {
+			for (var y = 0; y < grid.height; y++) {
+				const oldColor = grid.tiles[x][y].color;
+				const oldHue = oldColor.get('hsl.h');
+				const newHue = (oldHue + scaledMod) % 360;
+
+				newGrid.tiles[x][y].color =
+					oldColor.set('hsl.h', newHue);
+			}
+		}
+
+		return newGrid;
+	},
+});
+
+const desyncCommand = new Command({
+	makeSource: function (grid, mod) {
+		var newGrid = cloneGrid(grid);
+
+		for (var x = 0; x < grid.width; x++) {
+			for (var y = 0; y < grid.height; y++) {
+				if (((y + floor(mod)) % 4) == 0) {
+					newGrid.tiles[x][y].color = chroma('#0f0');
+				}
+			}
+		}
+
+		return newGrid;
+	},
+
+	transform: function (grid, mod) {
+		var newGrid = cloneGrid(grid);
+		const scaledMod = floor(Range.convert(mod, {
+			from: { lower: 0, upper: modRange },
+			to: { lower: 0, upper: grid.width }
+		}));
+
+		for (var x = 0; x < grid.width; x++) {
+			for (var y = 0; y < grid.height; y++) {
+				if ((y % 2) == 0) {
+					newGrid.tiles[x][y].color = grid.tiles[x][y].color;
+				} else {
+					const offset = -(scaledMod + 1);
+					const dstCoordinate =
+						wrapGridCoordinate(x + offset, y, grid);
+
+					newGrid.tiles[dstCoordinate.x][dstCoordinate.y].color =
+						grid.tiles[x][y].color;
+				}
+			}
+		}
+
+		return newGrid;
+	},
+});
+
+
+const rotateCommand = new Command({
+	makeSource: function (grid, mod) {
+		var newGrid = cloneGrid(grid);
+
+		const scaledMod = Range.convert(mod, {
+			from: { lower: 0, upper: modRange },
+			to: { lower: 0, upper: TWO_PI },
+		})
+
+		for (var x = 0; x < grid.width; x++) {
+			for (var y = 0; y < grid.height; y++) {
+				const xr = Range.convert(x, {
+					from: { lower: 0, upper: grid.width },
+					to: { lower: 0, upper: TWO_PI }
+				}) + scaledMod;
+
+				const yr = Range.convert(y, {
+					from: { lower: 0, upper: grid.height },
+					to: { lower: 0, upper: TWO_PI }
+				}) + scaledMod;
+
+				newGrid.tiles[x][y].color =
+					chroma.hsl(
+						Math.cos(xr),
+						255, 
+						Math.cos(xr) - Math.sin(yr));
+				newGrid.tiles[x][y].color =
+					newGrid.tiles[x][y].color
+						.alpha(max(0.5, Math.cos(xr) - Math.sin(yr)) - 0.5);
+			}
+		}
+
+		return newGrid;
+	},
+
+	transform: function (grid, mod) {
+		var newGrid = cloneGrid(grid);
+
+		const angle = Range.convert(floor(mod), {
+			from: { lower: 0, upper: 10 },
+			// Offset output so the default mod = 0 still rotates.
+			to: { lower: 0 + 0.1, upper: TWO_PI + 0.1 }
+		});
+
+		// this is wrong
+		for (var x = 0; x < grid.width; x++) {
+			for (var y = 0; y < grid.height; y++) {
+				const centeringOffset = {
+					x: -grid.width / 2,
+					y: -grid.height / 2
+				};
+				const rotationMatrix = [
+					[Math.cos(angle), -Math.sin(angle)],
+					[Math.sin(angle), Math.cos(angle)]
+				];
+
+				// Offset grid so that origin is in center of display.
+				const offsetX = x + centeringOffset.x;
+				const offsetY = y + centeringOffset.y;
+
+				// Rotate around center of display.
+				const rotatedPoint =
+					applyTransform(rotationMatrix, { x: offsetX, y: offsetY });
+
+				// Unoffset grid to bring back to original centering.
+				const unoffsetX = rotatedPoint.x - centeringOffset.x;
+				const unoffsetY = rotatedPoint.y - centeringOffset.y;
+
+				// Wrap coordinate to grid.
+				const dstCoordinate =
+					wrapGridCoordinate(unoffsetX, unoffsetY, grid);
+
+				newGrid.tiles[dstCoordinate.x][dstCoordinate.y] =
+					grid.tiles[x][y];
+			}
+		}
+
+		return newGrid;
+	},
+});
+
+
+
+const animateCommand = new Command({
+	makeSource: function (grid, mod) {
+		var newGrid = cloneGrid(grid);
+		const scaledMod = floor(Range.convert(mod, {
+			from: {
+				lower: 0,
+				upper: 10 },
+			to: {
+				lower: grid.width / 2,
+				upper: grid.width / 2 + grid.width },
+		})) % grid.width;
+
+		for (var x = 0; x < grid.width; x++) {
+			for (var y = 0; y < grid.height; y++) {
+				if (x == scaledMod) {
+					newGrid.tiles[x][y].color = chroma('blue');
+				} else {
+					newGrid.tiles[x][y].color = chroma('black').alpha(0);
+				}
+			}
+		}
+
+		return newGrid;
+	},
+
+	modOffsets: function (t, myIndex) {
+		return { [myIndex - 1]: t % 10 }
+	}
+});
+
+
