@@ -459,8 +459,48 @@ function tick(dt, model) {
 }
 
 function render(model) {
+	function simplify(layerSource) {
+		const source = layerSource.charAt(0);
+		var transforms = layerSource.substr(1);
+
+		if (transforms.length > 0) {
+			var lastTransform = transforms[0];
+			var simplifiedTransforms = "";
+
+			for (var i = 0; i < transforms.length; i++) {
+				switch (transforms.charAt(i)) {
+					case 'f':
+						if (lastTransform == 'f') {
+							simplifiedTransforms += 'k';
+						} else {
+							simplifiedTransforms += 'f';
+							lastTransform = 'f';
+						}
+						break;
+
+					case 'k':
+						simplifiedTransforms += 'k';
+						break;
+
+					case 'a':
+						simplifiedTransforms += 'a';
+						break;
+
+					default:
+						simplifiedTransforms += transforms.charAt(i);
+						lastTransform = transforms.charAt(i);
+						break;
+				}
+			}
+
+			transforms = simplifiedTransforms;
+		}
+
+		return `${source}${transforms}`;
+	}
+
 	function renderGrid(stackSource) {
-		const stack = stackSource
+		const stack = simplify(stackSource)
 			.split('')
 			.map((char) => charToCommandIndex[char])
 			.filter((idx) => idx != null)
