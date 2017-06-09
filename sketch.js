@@ -301,17 +301,32 @@ const mirrorCommand = new Command({
 	},
 
 	transform: function (grid, mod) {
-		// TODO: Use mod
 		var newGrid = cloneGrid(grid);
+
+		const scaledMod = floor(mod % 2);
 
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
-				if (x > ((grid.width - 1) / 2)) {
-					newGrid.tiles[x][y] =
-						grid.tiles[(grid.width - 1) - x][y];
-				} else {
-					newGrid.tiles[x][y] =
-						grid.tiles[x][y];
+				switch (scaledMod) {
+					case 0:
+						if (x > ((grid.width - 1) / 2)) {
+							newGrid.tiles[x][y] =
+								grid.tiles[(grid.width - 1) - x][y];
+						} else {
+							newGrid.tiles[x][y] =
+								grid.tiles[x][y];
+						}
+						break;
+
+					case 1:
+						if (y > ((grid.height - 1) / 2)) {
+							newGrid.tiles[x][y] =
+								grid.tiles[x][(grid.height - 1) - y];
+						} else {
+							newGrid.tiles[x][y] =
+								grid.tiles[x][y];
+						}
+						break;
 				}
 			}
 		}
