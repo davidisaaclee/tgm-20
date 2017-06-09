@@ -57,7 +57,10 @@ function State(options) {
 function Command(options) {
 	const defaultOptions = {
 		makeSource: function (grid, mod) {
-			return createGrid(grid.width, grid.height, chroma('black').alpha(0));
+			return createGrid(
+				grid.width, 
+				grid.height, 
+				chroma('black').alpha(0));
 		},
 
 		transform: function (grid, mod) {
@@ -284,10 +287,20 @@ const mirrorCommand = new Command({
 	makeSource: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 
+		for (var x = 0; x < grid.width; x++) {
+			for (var y = 0; y < grid.height; y++) {
+				newGrid.tiles[x][y].color =
+					(grid.tiles[x][y].color.luminance() > 0.3)
+						? chroma('black').alpha(0)
+						: chroma('red');
+			}
+		}
+
 		return newGrid;
 	},
 
 	transform: function (grid, mod) {
+		// TODO: Use mod
 		var newGrid = cloneGrid(grid);
 
 		for (var x = 0; x < grid.width; x++) {
@@ -340,10 +353,6 @@ var state = new State({
 	gridWidth: gridSize.width, 
 	gridHeight: gridSize.height
 });
-
-function preload() {
-
-}
 
 function setup() {
 	updateTileSize();
