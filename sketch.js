@@ -278,7 +278,7 @@ const animateCommand = new Command({
 	},
 
 	modOffsets: function (t, myIndex, myMod) {
-		return { [myIndex - 1]: (t + myMod) % modRange }
+		return { [myIndex - 1]: t + myMod }
 	}
 });
 
@@ -336,6 +336,20 @@ const mirrorCommand = new Command({
 });
 
 
+const offsetModCommand = new Command({
+	makeSource: function (grid, mod) {
+		var newGrid = cloneGrid(grid);
+
+		return newGrid;
+	},
+
+	modOffsets: function (t, myIndex, myMod) {
+		return { [myIndex - 1]: 1 + myMod }
+	}
+});
+
+
+
 // -- Core -- //
 
 const fps = 30;
@@ -354,7 +368,8 @@ const commands = [
 	desyncCommand,
 	rotateCommand,
 	animateCommand,
-	mirrorCommand
+	mirrorCommand,
+	offsetModCommand
 ];
 
 const charToCommandIndex = {
@@ -362,7 +377,8 @@ const charToCommandIndex = {
 	's': 1,
 	'd': 2,
 	'a': 3,
-	'j': 4
+	'j': 4,
+	'k': 5
 };
 
 var state = new State({ 
@@ -431,9 +447,9 @@ function render(model) {
 
 		return stack.reduce((grid, elm, idx) => {
 			if (idx == 0) {
-				return elm.makeSource(grid, nullFallback(mods[idx], 0));
+				return elm.makeSource(grid, nullFallback(mods[idx], 0) % modRange);
 			} else {
-				return elm.transform(grid, nullFallback(mods[idx], 0));
+				return elm.transform(grid, nullFallback(mods[idx], 0) % modRange);
 			}
 		}, model.grid);
 	}
