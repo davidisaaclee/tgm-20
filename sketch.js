@@ -32,17 +32,12 @@ const Range = {
 };
 
 
-const fps = 30;
-var timescale = 1;
-var isPaused = false;
-
-
 // -- Types -- //
 
 function State(options) {
 	const defaultOptions = {
-		gridWidth: 9,
-		gridHeight: 6
+		gridWidth: 10,
+		gridHeight: 10
 	};
 
 	const opts =
@@ -90,7 +85,7 @@ const colorCommand = new Command({
 		var newGrid = cloneGrid(grid);
 
 		const hueOffset = Range.convert(floor(mod), {
-			from: { lower: 0, upper: 10 },
+			from: { lower: 0, upper: modRange },
 			to: { lower: 0, upper: 360 }
 		});
 		for (var x = 0; x < grid.width; x++) {
@@ -136,7 +131,7 @@ const desyncCommand = new Command({
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
 				if (((y + floor(mod)) % 4) == 0) {
-					newGrid.tiles[x][y].color = chroma('lightgreen');
+					newGrid.tiles[x][y].color = chroma('#0f0');
 				}
 			}
 		}
@@ -147,7 +142,7 @@ const desyncCommand = new Command({
 	transform: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 		const scaledMod = floor(Range.convert(mod, {
-			from: { lower: 0, upper: 10 },
+			from: { lower: 0, upper: modRange },
 			to: { lower: 0, upper: grid.width }
 		}));
 
@@ -176,7 +171,7 @@ const rotateCommand = new Command({
 		var newGrid = cloneGrid(grid);
 
 		const scaledMod = Range.convert(mod, {
-			from: { lower: 0, upper: 10 },
+			from: { lower: 0, upper: modRange },
 			to: { lower: 0, upper: TWO_PI },
 		})
 
@@ -289,8 +284,17 @@ const animateCommand = new Command({
 
 // -- Core -- //
 
+
+const fps = 30;
+var timescale = 1;
+var isPaused = false;
+
 var tileWidth = 40;
 var tileHeight = 40;
+
+const modRange = 20;
+
+const gridSize = { width: 20, height: 20 };
 
 const commands = [
 	colorCommand,
@@ -307,23 +311,23 @@ const charToCommandIndex = {
 };
 
 var state = new State({ 
-	gridWidth: 9, 
-	gridHeight: 6
+	gridWidth: gridSize.width, 
+	gridHeight: gridSize.height
 });
 
 function updateTileSize() {
 	const frame = document.querySelector('#stage');
 	const bounds = frame.getBoundingClientRect();
-	tileWidth = bounds.width / 9;
-	tileHeight = bounds.height / 6;
+	tileWidth = bounds.width / gridSize.width;
+	tileHeight = bounds.height / gridSize.height;
 }
 
 function setup() {
 	updateTileSize();
 
 	const canvas = createCanvas(
-		tileWidth * 9,
-		tileHeight * 6);
+		tileWidth * gridSize.width,
+		tileHeight * gridSize.height);
 	canvas.parent('stage');
 }
 
@@ -465,8 +469,8 @@ function simulateKeypress(char) {
 function windowResized() {
 	updateTileSize();
 	resizeCanvas(
-		tileWidth * 9,
-		tileHeight * 6);
+		tileWidth * gridSize.width,
+		tileHeight * gridSize.height);
 }
 
 // -- Helpers -- //
