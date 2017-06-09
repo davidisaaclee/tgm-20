@@ -286,7 +286,7 @@ const animateCommand = new Command({
 
 
 const fps = 30;
-var timescale = 1;
+var timescale = 4;
 var isPaused = false;
 
 var tileWidth = 40;
