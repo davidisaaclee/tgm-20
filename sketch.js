@@ -357,25 +357,21 @@ function render(model) {
 			.map((idx) => commands[idx])
 			.filter((cmd) => cmd != null);
 
-		// TODO: If mods are calculated from the top of the stack to the
-		// bottom, we could use `mod` within `modOffets`.
-		var mods = stack
-			.reduce(
-				(acc, elm, idx) => {
-					const offsets = elm.modOffsets(model.timestamp, idx);
-					Object.keys(offsets).forEach((key) => {
-						acc[key] += offsets[key];
-					});
+		const addWithNullFallbackToZero = (target, ext, key) =>
+			nullFallback(target, 0) + nullFallback(ext, 0);
 
-					return acc;
-				},
-				stack.map(() => 0));
+		var mods = stack
+			.reduce((acc, elm, idx) =>
+				mergeBy(
+					addWithNullFallbackToZero, 
+					acc, 
+					elm.modOffsets(model.timestamp, idx)), {});
 
 		return stack.reduce((grid, elm, idx) => {
 			if (idx == 0) {
-				return elm.makeSource(grid, mods[idx]);
+				return elm.makeSource(grid, nullFallback(mods[idx], 0));
 			} else {
-				return elm.transform(grid, mods[idx]);
+				return elm.transform(grid, nullFallback(mods[idx], 0));
 			}
 		}, model.grid);
 	}
@@ -545,4 +541,9 @@ function mergeBy(reducer, target, extensions) {
 			acc[key] = reducer(acc[key], extensions[key], key)
 			return acc;
 		}, target);
+}
+
+
+function nullFallback(valueOrNull, fallback) {
+	return (valueOrNull == null) ? fallback : valueOrNull;
 }
