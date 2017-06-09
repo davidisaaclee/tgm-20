@@ -464,7 +464,7 @@ function render(model) {
 		var transforms = layerSource.substr(1);
 
 		if (transforms.length > 0) {
-			var lastTransform = transforms[0];
+			var lastTransform = "";
 			var simplifiedTransforms = "";
 
 			for (var i = 0; i < transforms.length; i++) {
@@ -552,7 +552,9 @@ function render(model) {
 
 	background(0);
 	model.sourceCode
-		.forEach((line) => drawGrid(renderGrid(line)));
+		.filter((line) => line.length > 0)
+		.map(renderGrid)
+		.forEach(drawGrid);
 }
 
 
