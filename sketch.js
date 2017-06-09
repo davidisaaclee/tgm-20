@@ -280,7 +280,31 @@ const animateCommand = new Command({
 });
 
 
+const mirrorCommand = new Command({
+	makeSource: function (grid, mod) {
+		var newGrid = cloneGrid(grid);
 
+		return newGrid;
+	},
+
+	transform: function (grid, mod) {
+		var newGrid = cloneGrid(grid);
+
+		for (var x = 0; x < grid.width; x++) {
+			for (var y = 0; y < grid.height; y++) {
+				if (x > ((grid.width - 1) / 2)) {
+					newGrid.tiles[x][y] =
+						grid.tiles[(grid.width - 1) - x][y];
+				} else {
+					newGrid.tiles[x][y] =
+						grid.tiles[x][y];
+				}
+			}
+		}
+
+		return newGrid;
+	},
+});
 
 
 // -- Core -- //
@@ -300,14 +324,16 @@ const commands = [
 	colorCommand,
 	desyncCommand,
 	rotateCommand,
-	animateCommand
+	animateCommand,
+	mirrorCommand
 ];
 
 const charToCommandIndex = {
 	'a': 0,
 	's': 1,
 	'd': 2,
-	'f': 3
+	'f': 3,
+	'j': 4
 };
 
 var state = new State({ 
@@ -315,11 +341,8 @@ var state = new State({
 	gridHeight: gridSize.height
 });
 
-function updateTileSize() {
-	const frame = document.querySelector('#stage');
-	const bounds = frame.getBoundingClientRect();
-	tileWidth = bounds.width / gridSize.width;
-	tileHeight = bounds.height / gridSize.height;
+function preload() {
+
 }
 
 function setup() {
@@ -560,4 +583,11 @@ function mergeBy(reducer, target, extensions) {
 
 function nullFallback(valueOrNull, fallback) {
 	return (valueOrNull == null) ? fallback : valueOrNull;
+}
+
+function updateTileSize() {
+	const frame = document.querySelector('#stage');
+	const bounds = frame.getBoundingClientRect();
+	tileWidth = bounds.width / gridSize.width;
+	tileHeight = bounds.height / gridSize.height;
 }
