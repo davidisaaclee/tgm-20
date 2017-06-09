@@ -41,7 +41,7 @@ var isPaused = false;
 
 function State(options) {
 	const defaultOptions = {
-		gridWidth: 8,
+		gridWidth: 9,
 		gridHeight: 6
 	};
 
@@ -289,6 +289,9 @@ const animateCommand = new Command({
 
 // -- Core -- //
 
+var tileWidth = 40;
+var tileHeight = 40;
+
 const commands = [
 	colorCommand,
 	desyncCommand,
@@ -304,14 +307,23 @@ const charToCommandIndex = {
 };
 
 var state = new State({ 
-	gridWidth: 8, 
+	gridWidth: 9, 
 	gridHeight: 6
 });
 
+function updateTileSize() {
+	const frame = document.querySelector('#stage');
+	const bounds = frame.getBoundingClientRect();
+	tileWidth = bounds.width / 9;
+	tileHeight = bounds.height / 6;
+}
+
 function setup() {
+	updateTileSize();
+
 	const canvas = createCanvas(
-		tileSize * 8,
-		tileSize * 6);
+		tileWidth * 9,
+		tileHeight * 6);
 	canvas.parent('stage');
 }
 
@@ -332,7 +344,6 @@ function tick(dt, model) {
 	return model;
 }
 
-const tileSize = 40;
 function render(model) {
 	function renderGrid(stackSource) {
 		const stack = stackSource
@@ -370,7 +381,7 @@ function render(model) {
 		for (var x = 0; x < model.grid.width; x++) {
 			for (var y = 0; y < model.grid.height; y++) {
 				fill(renderedGrid.tiles[x][y].color.css());
-				rect(x * tileSize, y * tileSize, tileSize, tileSize);
+				rect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
 			}		
 		}
 	}
@@ -381,9 +392,9 @@ function render(model) {
 		text(
 			model.sourceCode.join("\n"), 
 			10, 
-			model.grid.height * tileSize + 10, 
-			model.grid.width * tileSize,
-			height - model.grid.height * tileSize);
+			model.grid.height * tileHeight + 10, 
+			model.grid.width * tileWidth,
+			height - model.grid.height * tileHeight);
 	}
 
 	background(0);
@@ -456,6 +467,13 @@ function handleInput(a) {
 	a.value = state.sourceCode.join('\n');
 }
 
+
+function windowResized() {
+	updateTileSize();
+	resizeCanvas(
+		tileWidth * 9,
+		tileHeight * 6);
+}
 
 // -- Helpers -- //
 
