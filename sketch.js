@@ -594,10 +594,13 @@ function backspace() {
 	if (lastLine.length == 0) {
 		state.sourceCode =
 			state.sourceCode.slice(0, state.sourceCode.length - 1);
-		var lastLine = state.sourceCode[state.sourceCode.length - 1];
-		lastLine = lastLine.slice(0, lastLine.length - 1);
-		state.sourceCode[state.sourceCode.length - 1] =
-			lastLine;
+
+		if (state.sourceCode.length > 0) {
+			var lastLine = state.sourceCode[state.sourceCode.length - 1];
+			lastLine = lastLine.slice(0, lastLine.length - 1);
+			state.sourceCode[state.sourceCode.length - 1] =
+				lastLine;
+		}
 	} else {
 		lastLine = lastLine.slice(0, lastLine.length - 1);
 		state.sourceCode[state.sourceCode.length - 1] =
