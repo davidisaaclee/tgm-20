@@ -5,16 +5,11 @@ jkkkkkkkkkkskkkkkkkkkkfkkkkkkjl
 
 dfkkkkkkkkkdkksl
 
-sjl
-sfjll
-sffjlll
-sfffjllll
-sffffjlllll
+sjl;sfjll;sffjlll;sfffjllll
 
 dksll
 
-dkkkkjlflkkkk
-dksll
+dkkkkjlflkkkk;dksll
 
 dsdsssllllffffff
 
@@ -651,6 +646,25 @@ function linebreak() {
 
 
 function renderSourceCode() {
+	function indicateSourceError() {
+		srcContainer.classList.add('error');
+		window.setTimeout(() => srcContainer.classList.remove('error'), 200);
+	}
+
+	// Keep it within tha limit
+	while (state.sourceCode.length > 4) {
+		state.sourceCode.pop();
+		indicateSourceError();
+	}
+
+	state.sourceCode = state.sourceCode.map((ln) => {
+		while (ln.length > 32) {
+			ln = ln.substr(0, ln.length - 1);
+			indicateSourceError();
+		}
+		return ln;
+	});
+
 	const lineElements = state.sourceCode
 		.map((line) => {
 			const div = document.createElement('div');
@@ -687,8 +701,7 @@ function renderSourceCode() {
     };
 
 		shareableTextArea.value = state.sourceCode.join(';');
-		
-    // restore from variables...
+
     shareableTextArea.setSelectionRange(selection.start, selection.end);
 }
 
