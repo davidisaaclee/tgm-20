@@ -170,10 +170,11 @@ const rotateCommand = new Command({
 	makeSource: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
 
-		const scaledMod = Range.convert(mod, {
+		const scaledMod = Range.convert(floor(mod), {
 			from: { lower: 0, upper: modRange },
 			to: { lower: 0, upper: TWO_PI },
-		})
+		});
+		const scaledMod2 = pow(Math.sin(scaledMod), 5) + 1.5;
 
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
@@ -191,10 +192,14 @@ const rotateCommand = new Command({
 					chroma.hsl(
 						Math.cos(xr),
 						255, 
-						Math.cos(xr) - Math.sin(yr));
+						yr);
+
+				const chris = Math.cos(floor(xr * scaledMod2) / scaledMod2);
+				const nota = Math.sin(yr);
+
 				newGrid.tiles[x][y].color =
 					newGrid.tiles[x][y].color
-						.alpha(max(0.5, Math.cos(xr) - Math.sin(yr)) - 0.5);
+						.alpha(min(1, max(0.5, chris - nota) - 0.4));
 			}
 		}
 
