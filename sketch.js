@@ -1,37 +1,3 @@
-// Range : { lower : Number, upper : Number }
-const Range = {
-	span: (range) => range.upper - range.lower,
-
-	// convert(3, { from: range1, to: range2 })
-	// convert(3, { to: range2, from: range1 })
-	convert: (value, options) =>
-		(value - options.from.lower) 
-			/ Range.span(options.from)
-			* Range.span(options.to)
-			+ options.to.lower,
-
-	clamp: (value, range) =>
-		Math.max(range.lower, Math.min(range.upper, value)),
-
-	normalize: (value, range, shouldClamp) => {
-		const willClamp = (shouldClamp === undefined)
-			? false
-			: shouldClamp;
-		const normalizedRange = { lower: 0, upper: 1 };
-		var retval = Range.convert(value, { 
-			from: range, 
-			to: normalizedRange
-		});
-
-		if (willClamp) {
-			retval = Range.clamp(retval, normalizedRange);
-		}
-
-		return retval;
-	}
-};
-
-
 // -- Types -- //
 
 function State(options) {
@@ -724,3 +690,36 @@ function updateTileSize() {
 	tileWidth = bounds.width / gridSize.width;
 	tileHeight = bounds.height / gridSize.height;
 }
+
+// Range : { lower : Number, upper : Number }
+const Range = {
+	span: (range) => range.upper - range.lower,
+
+	// convert(3, { from: range1, to: range2 })
+	// convert(3, { to: range2, from: range1 })
+	convert: (value, options) =>
+		(value - options.from.lower) 
+			/ Range.span(options.from)
+			* Range.span(options.to)
+			+ options.to.lower,
+
+	clamp: (value, range) =>
+		Math.max(range.lower, Math.min(range.upper, value)),
+
+	normalize: (value, range, shouldClamp) => {
+		const willClamp = (shouldClamp === undefined)
+			? false
+			: shouldClamp;
+		const normalizedRange = { lower: 0, upper: 1 };
+		var retval = Range.convert(value, { 
+			from: range, 
+			to: normalizedRange
+		});
+
+		if (willClamp) {
+			retval = Range.clamp(retval, normalizedRange);
+		}
+
+		return retval;
+	}
+};
