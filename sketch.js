@@ -650,7 +650,7 @@ function linebreak() {
 function renderSourceCode() {
 	function indicateSourceError() {
 		srcContainer.classList.add('error');
-		window.setTimeout(() => srcContainer.classList.remove('error'), 200);
+		window.setTimeout(() => srcContainer.classList.remove('error'), 300);
 	}
 
 	// Keep it within tha limit
