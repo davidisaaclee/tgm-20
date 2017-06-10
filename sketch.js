@@ -122,13 +122,24 @@ const colorCommand = new Command({
 });
 
 const desyncCommand = new Command({
+	
 	makeSource: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
+		const scaledMod = floor(Range.convert(mod, {
+			from: {
+				lower: 0,
+				upper: modRange },
+			to: {
+				lower: grid.width / 2,
+				upper: grid.width / 2 + grid.width },
+		})) % grid.width;
 
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
-				if (((y + floor(mod)) % 4) == 0) {
-					newGrid.tiles[x][y].color = chroma('#0f0');
+				if (x == scaledMod) {
+					newGrid.tiles[x][y].color = chroma('blue');
+				} else {
+					newGrid.tiles[x][y].color = chroma('black').alpha(0);
 				}
 			}
 		}
@@ -249,21 +260,11 @@ const rotateCommand = new Command({
 const animateCommand = new Command({
 	makeSource: function (grid, mod) {
 		var newGrid = cloneGrid(grid);
-		const scaledMod = floor(Range.convert(mod, {
-			from: {
-				lower: 0,
-				upper: modRange },
-			to: {
-				lower: grid.width / 2,
-				upper: grid.width / 2 + grid.width },
-		})) % grid.width;
 
 		for (var x = 0; x < grid.width; x++) {
 			for (var y = 0; y < grid.height; y++) {
-				if (x == scaledMod) {
-					newGrid.tiles[x][y].color = chroma('blue');
-				} else {
-					newGrid.tiles[x][y].color = chroma('black').alpha(0);
+				if (((y + floor(mod)) % 4) == 0) {
+					newGrid.tiles[x][y].color = chroma('#0f0');
 				}
 			}
 		}
@@ -387,6 +388,18 @@ const offsetModCommand = new Command({
 		return { [myIndex - 1]: 1 + myMod }
 	}
 });
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
