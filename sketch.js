@@ -425,6 +425,9 @@ const commands = [
 	offsetModCommand
 ];
 
+const srcContainer = document.querySelector('#source-code');
+const stage = document.querySelector('#stage');
+
 // old  a s d f j k 
 // new  l s j f d k
 
@@ -598,10 +601,11 @@ function render(model) {
 function keyTyped() {
 	if (charToCommand[key] != null) {
 		addCommandChar(key);
+		renderSourceCode();
 	} else if (keyCode == 32) {
 		isPaused = !isPaused;
 		if (isPaused) {
-			redraw(); 
+			redraw();
 			noLoop();
 		} else {
 			loop();
@@ -611,7 +615,13 @@ function keyTyped() {
 	} else if ((keyCode == 8) || (key == 'a')) {
 		// Backspace was typed.
 		backspace();
+		renderSourceCode();
 		return false;
+	} else if ((keyCode == 13) || (keyCode == 59)) {
+		// Enter or ; was typed.
+		linebreak();
+		renderSourceCode();
+		return true;
 	} else {
 		console.log(keyCode);
 		return true;
@@ -635,38 +645,48 @@ function linebreak() {
 }
 
 
-function handleInput(a) {
-	function isValidChar(char) {
-		if (charToCommand[char] != null) {
-			return true;
+function renderSourceCode() {
+	const lineElements = state.sourceCode
+		.map((line) => {
+			const div = document.createElement('div');
+			div.classList.add('src-line');
+
+			line
+				.split('')
+				.map((char, idx) => {
+					const span = document.createElement('span');
+					span.classList.add(`cmd-${char}`);
+					span.classList.add('cmd-char');
+					if (idx == 0) {
+						span.classList.add('hd-char');
+					}
+					span.innerText = char;
+					return span;
+				})
+				.forEach((elt) => div.appendChild(elt));
+
+			return div;
+		});
+
+		// Remove all children.
+		while (srcContainer.firstChild) {
+			srcContainer.removeChild(srcContainer.firstChild);
 		}
 
-		if (char == '\n') {
-			return true;
-		}
-
-		return false;
-	}
-
-	state.sourceCode = a.value
-		.split('')
-		.filter(isValidChar)
-		.join('')
-		.split('\n');
-
-	a.value = state.sourceCode.join('\n');
+		srcContainer
+		lineElements.forEach((elt) => srcContainer.appendChild(elt));
 }
 
 function simulateKeypress(char) {
-	const textarea = document.querySelector('#source-code');
-	if (char == 'BACKSPACE')  {
+	console.log("Simulating", char);
+	if (char == 'bksp')  {
 		backspace();
-		textarea.value = state.sourceCode.join('\n');
-		handleInput(textarea);
+	} else if (char == 'layr') {
+		linebreak();
 	} else {
-		textarea.value += char;
+		addCommandChar(char);
 	}
-	handleInput(textarea);
+	renderSourceCode();
 }
 
 
@@ -796,8 +816,7 @@ function nullFallback(valueOrNull, fallback) {
 }
 
 function updateTileSize() {
-	const frame = document.querySelector('#stage');
-	const bounds = frame.getBoundingClientRect();
+	const bounds = stage.getBoundingClientRect();
 	tileWidth = bounds.width / gridSize.width;
 	tileHeight = bounds.height / gridSize.height;
 }
