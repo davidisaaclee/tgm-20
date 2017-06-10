@@ -125,17 +125,14 @@ const desyncCommand = new Command({
 				lower: 0,
 				upper: modRange },
 			to: {
-				lower: grid.width / 2,
-				upper: grid.width / 2 + grid.width },
-		})) % grid.width;
+				lower: 0,
+				upper: grid.width },
+		}));
 
 		for (var x = 0; x < grid.width; x++) {
-			for (var y = 0; y < grid.height; y++) {
-				if (x == scaledMod) {
-					newGrid.tiles[x][y].color = chroma('blue');
-				} else {
-					newGrid.tiles[x][y].color = chroma('black').alpha(0);
-				}
+			for (var yOffset = 0; yOffset < ((scaledMod + 1) % grid.width); yOffset++) {
+				const p = wrapGridCoordinate(x, x + scaledMod - yOffset, grid);
+				newGrid.tiles[p.x][p.y].color = chroma('blue');
 			}
 		}
 
