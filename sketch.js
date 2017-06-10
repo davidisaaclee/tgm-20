@@ -425,13 +425,28 @@ const commands = [
 	offsetModCommand
 ];
 
-const charToCommandIndex = {
-	'f': 0,
-	's': 1,
-	'd': 2,
-	'a': 3,
-	'j': 4,
-	'k': 5
+// old  a s d f j k 
+// new  l s j f d k
+
+// a    s    d    f    j    k    l    _
+// bksp dsnc miro colr rota incr anim layr
+
+const commandToChar = {
+	dsnc: 's',
+	miro: 'd',
+	colr: 'f',
+	rota: 'j',
+	incr: 'k',
+	anim: 'l'
+};
+
+const charToCommand = {
+	[commandToChar.dsnc]: desyncCommand,
+	[commandToChar.miro]: mirrorCommand,
+	[commandToChar.colr]: colorCommand,
+	[commandToChar.rota]: rotateCommand,
+	[commandToChar.incr]: offsetModCommand,
+	[commandToChar.anim]: animateCommand
 };
 
 var state = new State({ 
@@ -476,21 +491,21 @@ function render(model) {
 
 			for (var i = 0; i < transforms.length; i++) {
 				switch (transforms.charAt(i)) {
-					case 'f':
-						if (lastTransform == 'f') {
-							simplifiedTransforms += 'k';
+					case commandToChar.colr:
+						if (lastTransform == commandToChar.colr) {
+							simplifiedTransforms += commandToChar.incr;
 						} else {
-							simplifiedTransforms += 'f';
-							lastTransform = 'f';
+							simplifiedTransforms += commandToChar.colr;
+							lastTransform = commandToChar.colr;
 						}
 						break;
 
-					case 'k':
-						simplifiedTransforms += 'k';
+					case commandToChar.incr:
+						simplifiedTransforms += commandToChar.incr;
 						break;
 
-					case 'a':
-						simplifiedTransforms += 'a';
+					case commandToChar.anim:
+						simplifiedTransforms += commandToChar.anim;
 						break;
 
 					default:
@@ -509,9 +524,7 @@ function render(model) {
 	function renderGrid(stackSource) {
 		const stack = simplify(stackSource)
 			.split('')
-			.map((char) => charToCommandIndex[char])
-			.filter((idx) => idx != null)
-			.map((idx) => commands[idx])
+			.map((char) => charToCommand[char])
 			.filter((cmd) => cmd != null);
 
 		// Reverse stack so that we can accumulate mods from top to bottom.
@@ -566,10 +579,26 @@ function render(model) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // -- Events -- //
 
 function keyTyped() {
-	if (keyCode == 32) {
+	if (charToCommand[key] != null) {
+		addCommandChar(key);
+	} else if (keyCode == 32) {
 		isPaused = !isPaused;
 		if (isPaused) {
 			redraw(); 
@@ -579,19 +608,36 @@ function keyTyped() {
 		}
 
 		return false;
-	} else if (keyCode == 8) {
+	} else if ((keyCode == 8) || (key == 'a')) {
 		// Backspace was typed.
 		backspace();
 		return false;
 	} else {
-		// console.log(keyCode);
+		console.log(keyCode);
 		return true;
 	}
 }
 
+function addCommandChar(cmdChar) {
+	if (charToCommand[cmdChar] == null) {
+		return;
+	}
+
+	if (state.sourceCode.length == 0) {
+		state.sourceCode.push("");
+	}
+
+	state.sourceCode[state.sourceCode.length - 1] += cmdChar;
+}
+
+function linebreak() {
+	state.sourceCode.push("");
+}
+
+
 function handleInput(a) {
 	function isValidChar(char) {
-		if (charToCommandIndex[char] != null) {
+		if (charToCommand[char] != null) {
 			return true;
 		}
 
@@ -630,6 +676,30 @@ function windowResized() {
 		tileWidth * gridSize.width,
 		tileHeight * gridSize.height);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // -- Helpers -- //
 
