@@ -427,6 +427,7 @@ const commands = [
 
 const srcContainer = document.querySelector('#source-code');
 const stage = document.querySelector('#stage');
+const shareableTextArea = document.querySelector('#shareable-text');
 
 // old  a s d f j k 
 // new  l s j f d k
@@ -599,6 +600,10 @@ function render(model) {
 // -- Events -- //
 
 function keyTyped() {
+	if (shareableTextArea === document.activeElement) {
+		return true;
+	}
+
 	if (charToCommand[key] != null) {
 		addCommandChar(key);
 		renderSourceCode();
@@ -673,12 +678,45 @@ function renderSourceCode() {
 			srcContainer.removeChild(srcContainer.firstChild);
 		}
 
-		srcContainer
 		lineElements.forEach((elt) => srcContainer.appendChild(elt));
+
+		// Render to shareable text area.
+    const selection = {
+    	start: shareableTextArea.selectionStart,
+      end: shareableTextArea.selectionEnd
+    };
+
+		shareableTextArea.value = state.sourceCode.join(';');
+		
+    // restore from variables...
+    shareableTextArea.setSelectionRange(selection.start, selection.end);
+}
+
+function importSource(compressedSource) {
+	function isValidSourceChar(char) {
+		if (charToCommand[char] != null) {
+			return true;
+		}
+
+		if (char == ';') {
+			return true;
+		}
+
+		return false;
+	}
+
+	const validatedCode =
+		compressedSource
+			.split('')
+			.filter(isValidSourceChar)
+			.join('');
+
+	state.sourceCode = validatedCode.split(';');
+
+	renderSourceCode();
 }
 
 function simulateKeypress(char) {
-	console.log("Simulating", char);
 	if (char == 'bksp')  {
 		backspace();
 	} else if (char == 'layr') {
@@ -698,11 +736,10 @@ function windowResized() {
 }
 
 
-
-
-
-
-
+function handleCopySource() {
+	shareableTextArea.select();
+	document.execCommand('copy');
+}
 
 
 

@@ -87,7 +87,6 @@
 
 		#computer-frame {
 			margin: 2em;
-			/*max-height: 80%;*/
 		}
 
 		#stage {
@@ -127,6 +126,20 @@
 			height: 1.5em;
 		  width: 1.5em;
 		  border-radius: 0.75em;
+		}
+
+
+		#share-container {
+			color: white;
+			text-align: center;
+		}
+
+		#share-container #hidden-share {
+			opacity: 0;
+		}
+
+		#share-container:hover #hidden-share {
+			opacity: 1;
 		}
 
 	</style>
@@ -174,6 +187,14 @@
 	</svg>
 
 	<div id="source-code">
+	</div>
+
+	<div id="share-container">
+		<div>share your code</div>
+		<div id="hidden-share">
+			<input id="shareable-text" type="text" oninput="importSource(this.value)"></input>
+			<button onclick="handleCopySource()">copy</button>
+		</div>
 	</div>
 	<script 
 		language="javascript" 
