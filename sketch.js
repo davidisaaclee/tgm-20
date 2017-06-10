@@ -1,3 +1,5 @@
+console.log('hi');
+
 /*
 -- Examples
 
@@ -422,7 +424,7 @@ const commands = [
 ];
 
 const srcContainer = document.querySelector('#source-code');
-const stage = document.querySelector('#stage');
+const canvasStage = document.querySelector('#stage');
 const shareableTextArea = document.querySelector('#shareable-text');
 
 // old  a s d f j k 
@@ -867,7 +869,7 @@ function nullFallback(valueOrNull, fallback) {
 }
 
 function updateTileSize() {
-	const bounds = stage.getBoundingClientRect();
+	const bounds = canvasStage.getBoundingClientRect();
 	tileWidth = bounds.width / gridSize.width;
 	tileHeight = bounds.height / gridSize.height;
 }
