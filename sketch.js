@@ -1,3 +1,31 @@
+/*
+Examples
+
+jkkkkkkkkkkskkkkkkkkkkfkkkkkkjl
+
+dfkkkkkkkkkdkksl
+
+sjl
+sfjll
+sffjlll
+sfffjllll
+sffffjlllll
+
+dksll
+
+dkkkkjlflkkkk
+dksll
+
+dsdsssllllffffff
+
+ssl
+
+ljkkkkksl
+
+ljkkkkksld
+
+*/
+
 // -- Types -- //
 
 function State(options) {
