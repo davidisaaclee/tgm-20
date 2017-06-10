@@ -321,7 +321,7 @@ const mirrorCommand = new Command({
 					case 1:
 						if (y > ((grid.height - 1) / 2)) {
 							newGrid.tiles[x][y] =
-								grid.tiles[x][(grid.height - 1) - y];
+								grid.tiles[grid.width - 1 - x][grid.height - 1 - y];
 						} else {
 							newGrid.tiles[x][y] =
 								grid.tiles[x][y];
