@@ -1,17 +1,46 @@
-## Recurse Center - Code for Art
+# tgm-20
 
-This repo contains starter code for making art (or at least doing visual things) with code, using [p5.js](https://p5js.org/).
+a faithful emulation of the influential Tile Graphics Machine 20. made for [Recurse Center](recurse.com)'s Sprummer 2017 game jam.
 
-If you have git on your machine, clone this repo with:
+## try it out
 
-```git clone git@github.com:aac/rc-codeforart.git```
+https://davidisaaclee.github.io/rc-sprummer-game-jam
 
-The repo contains an HTML file, `index.html`, which contains a canvas element and includes the Javascript files for p5. It also loads `sketch.js`, which contains our code for interacting with p5 and drawing things in the canvas element. In the `empty` branch, `sketch.js` just contains an empty p5.js skeleton. The various branches have different sketches. List the branches with `git branch`.
+## what how do i
 
-To see the output of your code, just load index.html in your web browser. (On macOS you can do that from the CLI by entering `open index.html` inside the git repo directory.)
+- click on the computer's keyboard.
+- red and pink are both special keys.
+- blue and purple are also special keys, but in a different way.
+- you can also use `asdfjkl;` on your own keyboard.
+- share code with others by hovering over `share your code` and copying what's in the text box.
+- run code from others by hovering over `share your code` and pasting their code into the text box.
 
-p5.js has a lot of awesome functionality that I won't cover exhaustively. Check out [the reference page](https://p5js.org/reference/) for the full list of included features.
+## examples
 
-One of the best resources for beginners is Dan Shiffman's book [*The Nature Of Code*](http://natureofcode.com/book/) (featuring RC S1'17 Evan Emolo in the credits). If you're looking for ideas, it's a great place to start. The book uses the Java based Processing programming environment, but there are [p5.js versions of the examples](https://github.com/shiffman/The-Nature-of-Code-Examples-p5.js/).
+1. each line is one program. copy the line you want to try out to your clipboard.
+2. hover over `share your code` at the bottom of the screen. a text box should appear.
+3. paste the code into the text box.
 
-Dan also hosts a YouTube channel called [The Coding Train](http://thecodingtrain.com/) where he walks through a wide range of visual (and other) programming concepts.
+```
+dfkkkkkkkkkdkksll
+```
+
+```
+sjl;sfjll;sffjlll;sfffjllll
+```
+
+```
+dkkkkjlflkkkk;dkslll
+```
+
+```
+slsl
+```
+
+```
+ljkkkkksld
+```
+
+```
+skkkkksldslllfkkkkk
+```
