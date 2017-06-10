@@ -1,10 +1,10 @@
 # tgm-20
 
-a faithful emulation of the influential Tile Graphics Machine 20. made for [Recurse Center](recurse.com)'s Sprummer 2017 game jam.
+a faithful emulation of the influential Tile Graphics Machine 20. made for [Recurse Center](https://recurse.com)'s Sprummer 2017 game jam.
 
 ## try it out
 
-https://davidisaaclee.github.io/rc-sprummer-game-jam
+http://david-lee.net/tgm-20/
 
 ## what how do i
 
