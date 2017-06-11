@@ -703,7 +703,7 @@ function renderSourceCode() {
 
 		shareableTextArea.value = state.sourceCode.join(';');
 
-    shareableTextArea.setSelectionRange(selection.start, selection.end);
+    // shareableTextArea.setSelectionRange(selection.start, selection.end);
 }
 
 function importSource(compressedSource) {
