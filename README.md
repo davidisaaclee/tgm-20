@@ -16,13 +16,13 @@ http://david-lee.net/tgm-20/
 ## documentation
 
 - ![#093968](https://placehold.it/15/093968/000000?text=+) `bksp`
-- ![#B844C1](https://placehold.it/15/B844C1/000000?text=+) `dsnc`
-- ![#019934](https://placehold.it/15/019934/000000?text=+) `miro`
-- ![#0099CB](https://placehold.it/15/0099CB/000000?text=+) `colr`
-- ![#FF9934](https://placehold.it/15/FF9934/000000?text=+) `rota`
-- ![#FFFF01](https://placehold.it/15/FFFF01/000000?text=+) `incr`
-- ![#EB779E](https://placehold.it/15/EB779E/000000?text=+) `anim`
-- ![#FE0000](https://placehold.it/15/FE0000/000000?text=+) `layr`
+- ![#019934](https://placehold.it/15/019934/000000?text=+) `dsnc`
+- ![#0099CB](https://placehold.it/15/0099CB/000000?text=+) `miro`
+- ![#FF9934](https://placehold.it/15/FF9934/000000?text=+) `colr`
+- ![#FFFF01](https://placehold.it/15/FFFF01/000000?text=+) `rota`
+- ![#EB779E](https://placehold.it/15/EB779E/000000?text=+) `incr`
+- ![#FE0000](https://placehold.it/15/FE0000/000000?text=+) `anim`
+- ![#B844C1](https://placehold.it/15/B844C1/000000?text=+) `layr`
 
 ## examples
 
