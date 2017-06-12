@@ -9,11 +9,20 @@ http://david-lee.net/tgm-20/
 ## what how do i
 
 - click on the computer's keyboard.
-- red and pink are both special keys.
-- blue and purple are also special keys, but in a different way.
 - you can also use `asdfjkl;` on your own keyboard.
 - share code with others by hovering over `share your code` and copying what's in the text box.
 - run code from others by hovering over `share your code` and pasting their code into the text box.
+
+## documentation
+
+- ![#093968](https://placehold.it/15/093968/000000?text=+) `bksp`
+- ![#B844C1](https://placehold.it/15/B844C1/000000?text=+) `dsnc`
+- ![#019934](https://placehold.it/15/019934/000000?text=+) `miro`
+- ![#0099CB](https://placehold.it/15/0099CB/000000?text=+) `colr`
+- ![#FF9934](https://placehold.it/15/FF9934/000000?text=+) `rota`
+- ![#FFFF01](https://placehold.it/15/FFFF01/000000?text=+) `incr`
+- ![#EB779E](https://placehold.it/15/EB779E/000000?text=+) `anim`
+- ![#FE0000](https://placehold.it/15/FE0000/000000?text=+) `layr`
 
 ## examples
 
