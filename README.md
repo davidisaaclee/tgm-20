@@ -1,5 +1,7 @@
 # tgm-20
 
+![Example TGM-20 Program](https://media.giphy.com/media/3ohze01bFUSWmbyoKs/giphy.gif)
+
 a faithful emulation of the influential Tile Graphics Machine 20. made for [Recurse Center](https://recurse.com)'s Sprummer 2017 game jam.
 
 ## try it out
