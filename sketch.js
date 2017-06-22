@@ -562,10 +562,11 @@ function render(model) {
 
 	function drawGrid(renderedGrid) {
 		noStroke();
+		let bleed = 1;
 		for (var x = 0; x < model.grid.width; x++) {
 			for (var y = 0; y < model.grid.height; y++) {
 				fill(renderedGrid.tiles[x][y].color.css());
-				rect(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+				rect(x * tileWidth - bleed, y * tileHeight - bleed, tileWidth + bleed * 2, tileHeight + bleed * 2);
 			}
 		}
 	}
