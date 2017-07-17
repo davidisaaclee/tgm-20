@@ -22,7 +22,7 @@ a tgm-20 _program_ consists of up to four _layers_.
 
 a _layer_ is a sequence of _commands_. these commands describe an image by applying a sequence transforms to a preset source image.
 
-there are six regular commands in the tgm-20 standard library (detailed below), and two special commands for deleting a command and appending a new layer.
+there are six regular commands in the tgm-20 standard library (detailed below), and two special commands (deleting a command and appending a new layer).
 
 every regular command has two functions:
 - when a command is the first command in a layer, it draws a preset source image to the pixel matrix.
