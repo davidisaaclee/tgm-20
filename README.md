@@ -57,10 +57,10 @@ in other words, `dsnc anim colr miro`.
 here's the shareable code for that layer (read below to see how to run this on your tgm-20): `slfd`
 
 reading from left to right:
-- ![#019934](https://placehold.it/15/019934/000000?text=+)`dsnc` is the source command. it creates a diagonal row of blue pixels.
-- ![#FE0000](https://placehold.it/15/FE0000/000000?text=+)`anim` animates the mod value for the `dsnc` source, which has the effect of "stretching" the width of the diagonal line.
-- ![#FF9934](https://placehold.it/15/FF9934/000000?text=+)`colr` changes the hue of the line from blue to purple.
-- ![#0099CB](https://placehold.it/15/0099CB/000000?text=+)`miro` makes the matrix horizontally symmetric.
+- ![#019934](https://placehold.it/15/019934/000000?text=+) `dsnc` is the source command. it creates a diagonal row of blue pixels.
+- ![#FE0000](https://placehold.it/15/FE0000/000000?text=+) `anim` animates the mod value for the `dsnc` source, which has the effect of "stretching" the width of the diagonal line.
+- ![#FF9934](https://placehold.it/15/FF9934/000000?text=+) `colr` changes the hue of the line from blue to purple.
+- ![#0099CB](https://placehold.it/15/0099CB/000000?text=+) `miro` makes the matrix horizontally symmetric.
 
 ## more examples
 
